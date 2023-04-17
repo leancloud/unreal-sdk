@@ -25,7 +25,7 @@ public class LeanCloud : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", "Json", "JsonUtilities",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -34,10 +34,12 @@ public class LeanCloud : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
+				"JsonUtilities",
+				"Http",
+				// "CoreUObject",
+				// "Engine",
+				// "Slate",
+				// "SlateCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
