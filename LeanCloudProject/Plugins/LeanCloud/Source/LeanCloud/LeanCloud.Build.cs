@@ -1,12 +1,14 @@
 // Some copyright should be here...
 
 using UnrealBuildTool;
-
+using System.IO;
 public class LeanCloud : ModuleRules
 {
 	public LeanCloud(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "Public/Foundation")));
+		PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "Public/RTM")));
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
