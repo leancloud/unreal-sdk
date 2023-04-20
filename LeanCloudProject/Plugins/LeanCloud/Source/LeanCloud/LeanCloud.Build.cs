@@ -37,8 +37,8 @@ public class LeanCloud : ModuleRules
 			new string[]
 			{
 				"JsonUtilities",
-				"Http",
-				// "CoreUObject",
+				"Http", "Settings",
+				"CoreUObject",
 				// "Engine",
 				// "Slate",
 				// "SlateCore",

@@ -9,8 +9,6 @@ DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const 
 
 
 struct LEANCLOUD_API FLCObject : TSharedFromThis<FLCObject>{
-
-	DECLARE_DELEGATE_OneParam(FDelegate, const FLCObject& Object);
 	
 	FLCObject(const FString& InClassName, TSharedPtr<FJsonObject> InServerData = nullptr);
 	FLCObject(const FString& InClassName, const FString& InObjectId);

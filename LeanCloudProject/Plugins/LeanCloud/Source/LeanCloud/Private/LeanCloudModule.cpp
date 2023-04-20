@@ -1,18 +1,33 @@
 #include "LeanCloudModule.h"
+#include "ISettingsModule.h"
+#include "LeanCloudSettings.h"
 
 #define LOCTEXT_NAMESPACE "FLeanCloudModule"
 
 void FLeanCloudModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
+	// register settings
+	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+	if (SettingsModule != nullptr)	
+	{
+		SettingsModule->RegisterSettings("Project", "Plugins", "LeanCloud",
+			LOCTEXT("LeanCloudSettingsName", "Lean Cloud"),
+			LOCTEXT("LeanCloudSettingsDescription", "Project settings for LeanCloud plugin"),
+			GetMutableDefault<ULeanCloudSettings>()
+		);
+	}
 }
 
 void FLeanCloudModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-	
+	// unregister settings
+	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+	if (SettingsModule != nullptr)
+	{
+		SettingsModule->UnregisterSettings("Project", "Plugins", "LeanCloud");
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

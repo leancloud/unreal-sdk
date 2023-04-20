@@ -12,6 +12,7 @@ struct LEANCLOUD_API FLCUser : FLCObject {
 	void SetEmail(const FString& InEmail);
 	void SetMobilePhoneNumber(const FString& InMobilePhoneNumber);
 	FString GetUsername() const;
+	FString GetSessionToken() const;
 	FString GetEmail() const;
 	FString GetMobilePhoneNumber() const;
 
