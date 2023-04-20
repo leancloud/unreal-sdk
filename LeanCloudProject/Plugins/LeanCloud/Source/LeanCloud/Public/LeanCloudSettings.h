@@ -34,6 +34,8 @@ struct FLCApplicationSettings
 
 	UPROPERTY(config, EditAnywhere, Category=Application)
 	FLCAppConfigSettings Config;
+
+	FLCApplicationSettings(const FString& InAppId, const FString& InAppKey, const FString& InServerUrl = "");
 };
 
 /**

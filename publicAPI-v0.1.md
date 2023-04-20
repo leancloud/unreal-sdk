@@ -2,6 +2,37 @@
 
 ### 问题：UE 游戏怎么初始化 SDK，才更符合游戏开发规范？
 
+有两种初始化方式：
+1. 使用代码初始化
+```cpp
+// 注册第一个应用
+FLCApplicationSettings Settings("AppID", "AppKey", "ServerUrl");
+Settings.Config.HTTPRequestTimeoutInterval = 30;
+Settings.Config.bIsProduction = false;
+FLCApplication::Register(Settings);
+
+// 注册第二个应用ID
+TSharedPtr<FLCApplication> AppPtr = FLCApplication::Register(FLCApplicationSettings("Other AppID", "Other AppKey"));
+if (AppPtr.IsValid()) {
+    // 初始化成功
+}
+
+// 获取已经注册过的应用
+AppPtr = FLCApplication::Get("AppID");
+if (AppPtr.IsValid()) {
+    // 注册过的AppID应用
+}
+
+// 注销应用
+AppPtr->Unregister();
+```
+
+2. 插件初始化
+可以在项目设置中找到 *LeanCloud* 的设置项，然后添加 Application 的设置（可以添加多个）
+
+![](./plugin_init.jpg)
+
+
 
 ## 初始化
 

@@ -6,3 +6,8 @@ ULeanCloudSettings::ULeanCloudSettings(const FObjectInitializer& ObjectInitializ
 		, Applications(TArray<FLCApplicationSettings>())
 {
 }
+
+FLCApplicationSettings::FLCApplicationSettings(const FString& InAppId, const FString& InAppKey,
+	const FString& InServerUrl) : AppId(InAppId), AppKey(InAppKey), ServerUrl(InServerUrl) {
+	Config = FLCAppConfigSettings();
+}
