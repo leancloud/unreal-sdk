@@ -4,12 +4,11 @@
 #include "LCValue.h"
 #include "Dom/JsonObject.h"
 
-// struct FLCObject;
 DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const FLCError& Error);
 
 
-struct LEANCLOUD_API FLCObject : TSharedFromThis<FLCObject>{
-	
+class LEANCLOUD_API FLCObject : TSharedFromThis<FLCObject>{
+public:
 	FLCObject(const FString& InClassName, TSharedPtr<FJsonObject> InServerData = nullptr);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
 	virtual ~FLCObject();

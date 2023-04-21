@@ -1,7 +1,7 @@
 #pragma once
 #include "Dom/JsonObject.h"
 
-struct FLCObject;
+class FLCObject;
 struct LEANCLOUD_API FLCValue {
 
 	FLCValue(const TSharedPtr<FJsonValue>& InValue) : Value(InValue) {};

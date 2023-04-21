@@ -1,5 +1,6 @@
 #include "LCApplication.h"
 
+#include "Network/LCHttpClient.h"
 #include "Tools/LCDebuger.h"
 
 
@@ -31,6 +32,7 @@ TSharedPtr<FLCApplication> FLCApplication::Register(const FLCApplicationSettings
 		return nullptr;
 	}
 	TSharedPtr<FLCApplication> Ptr = MakeShared<FLCApplication>(InSettings);
+	Ptr->HttpClient = MakeShared<FLCHttpClient>(Ptr);
 	Registry.Add(InSettings.AppId, Ptr);
 	if (!Default.IsValid()) {
 		Default = Ptr;
@@ -52,8 +54,8 @@ void FLCApplication::Unregister() {
 }
 
 FLCApplication::FLCApplication() {
-	Settings = FLCApplicationSettings();
 }
 
 FLCApplication::FLCApplication(const FLCApplicationSettings& InSettings): Settings(InSettings) {
+	
 }

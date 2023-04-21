@@ -1,10 +1,11 @@
 #pragma once
 #include "LCObject.h"
 
-struct FLCUser;
+class FLCUser;
 DECLARE_DELEGATE_TwoParams(FLeanCloudUserDelegate, TSharedPtr<FLCUser> UserPtr, const FLCError& Error);
 
-struct LEANCLOUD_API FLCUser : FLCObject {
+class LEANCLOUD_API FLCUser : public FLCObject {
+public:
 	virtual ~FLCUser() override;
 
 	void SetUsername(const FString& InUserName);

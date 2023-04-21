@@ -1,5 +1,6 @@
 #pragma once
-#include "LCHttp.generated.h"
+#include "LCApplication.h"
+#include "LCHttpClient.generated.h"
 
 UENUM()
 enum class ELCHttpMethod :uint8
@@ -24,7 +25,7 @@ enum class ELCHttpDataType :uint8
 
 
 
-class FLCHttp {
+class FLCHttpClient {
 public:
 	struct HeaderFieldName {
 		static FString Id;
@@ -34,6 +35,12 @@ public:
 		static FString UserAgent;
 		static FString Accept;
 	};
-private:
 
+	FLCHttpClient(const TSharedPtr<FLCApplication>& Ptr): ApplicationPtr(Ptr) {};
+private:
+	TWeakPtr<FLCApplication> ApplicationPtr;
+
+	FString CreateRequestSignature();
+
+	TMap<FString, FString> CreateCommonHeaders();
 };

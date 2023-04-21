@@ -3,14 +3,15 @@
 #include "LCError.h"
 #include "LCValue.h"
 
-struct FLCObject;
+class FLCObject;
 DECLARE_DELEGATE_TwoParams(FLeanCloudQueryObjectDelegate, TSharedPtr<FLCObject> ObjectPtr, const FLCError& Error);
 DECLARE_DELEGATE_TwoParams(FLeanCloudQueryObjectsDelegate, TSharedPtr<TArray<FLCObject>> ObjectsPtr,
                            const FLCError& Error);
 DECLARE_DELEGATE_TwoParams(FLeanCloudQueryCountDelegate, TSharedPtr<uint64> CountPtr, const FLCError& Error);
 
 
-struct LEANCLOUD_API FLCQuery {
+class LEANCLOUD_API FLCQuery {
+public:
 	FLCQuery(const FString& InClassName);
 
 	void Get(const FString& ObjectId, FLeanCloudQueryObjectDelegate CallBack);

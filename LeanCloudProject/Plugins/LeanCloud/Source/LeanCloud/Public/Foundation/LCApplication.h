@@ -11,12 +11,15 @@ enum class ELCLogLevel :uint8
 
 DECLARE_DELEGATE_TwoParams(FLeanCloudLogDelegate, ELCLogLevel LogLevel, const FString& LogMsg);
 
-struct LEANCLOUD_API FLCApplication {
+class FLCUser;
+class FLCHttpClient;
 
+class LEANCLOUD_API FLCApplication {
+public:
 	/**
- * @brief You can print the output information of LeanCloud to the console or save it to *.log file
- * @param LogDelegate If there is log output, you can receive it here
- */
+	* @brief You can print the output information of LeanCloud to the console or save it to *.log file
+	* @param LogDelegate If there is log output, you can receive it here
+	*/
 	static void SetLogDelegate(FLeanCloudLogDelegate LogDelegate);
 ;
 	const FString& GetAppId() const;
@@ -24,18 +27,15 @@ struct LEANCLOUD_API FLCApplication {
 	const FString& GetServerUrl() const;
 	const FLCAppConfigSettings& GetConfig() const;
 
-	/**
- * @brief 
- * @param AppId app id
- * @param AppKey app key
- * @param ServerUrl default is empty, MUST provide if the application is in China.
- */
+
 	static TSharedPtr<FLCApplication> Register(const FLCApplicationSettings& InSettings);
+	void Unregister();
+	static TSharedPtr<FLCApplication> Get(const FString& InAppId);
 	
 	static TSharedPtr<FLCApplication> Default;
-	static TSharedPtr<FLCApplication> Get(const FString& InAppId);
 
-	void Unregister();
+	TSharedPtr<FLCUser> CurrentUser;
+	TSharedPtr<FLCHttpClient> HttpClient;
 
 	FLCApplication(const FLCApplicationSettings& InSettings);
 

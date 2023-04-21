@@ -11,7 +11,6 @@ void test() {
 	Settings.Config.HTTPRequestTimeoutInterval = 30;
 	Settings.Config.bIsProduction = false;
 	FLCApplication::Register(Settings);
-
 	// 注册第二个应用ID
 	TSharedPtr<FLCApplication> AppPtr = FLCApplication::Register(FLCApplicationSettings("Other AppID", "Other AppKey"));
 	if (AppPtr.IsValid()) {

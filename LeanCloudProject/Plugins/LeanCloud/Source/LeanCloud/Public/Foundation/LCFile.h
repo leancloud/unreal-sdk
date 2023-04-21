@@ -3,7 +3,8 @@
 
 DECLARE_DELEGATE_OneParam(FLeanCloudProgressDelegate, int64 Progress);
 
-struct LEANCLOUD_API FLCFile : FLCObject {
+class LEANCLOUD_API FLCFile : public FLCObject {
+public:
 	FLCFile();
 	FLCFile(const FString& Url, const FString& FileName);
 	FLCFile(const TArray<uint8>& Data, const FString& FileName);
