@@ -4,6 +4,7 @@
 #include "LeanCloudProjectGameModeBase.h"
 
 #include "LCApplication.h"
+#include "LCObject.h"
 
 void test() {
 	// 注册第一个应用
@@ -25,4 +26,14 @@ void test() {
 
 	// 注销应用
 	AppPtr->Unregister();
+
+	FLCObject Object("haha");
+	// Object.Set("nhe", 1.0);
+	Object.Set("nhe", TEXT("haha"));
+	Object.Set("nhe", "haha");
+	// TArray<FLCObject>;
+	Object.Set("nhe", {"haha"});
+	// Object.Set("nhe", FString("haha"));
+	// TArray<FString> Haha;
+	Object.Set("nhe", {"zhe", 1, true});
 }
