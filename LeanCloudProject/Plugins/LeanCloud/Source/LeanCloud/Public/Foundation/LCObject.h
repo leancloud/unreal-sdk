@@ -5,7 +5,7 @@
 #include "Dom/JsonObject.h"
 
 DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const FLCError& Error);
-
+typedef TMap<FString, FLCValue> TLCMap;
 
 class LEANCLOUD_API FLCObject : TSharedFromThis<FLCObject>{
 public:
@@ -45,7 +45,7 @@ public:
 	FDateTime GetCreatedAt() const;
 	FDateTime GetUpdatedAt() const;
 	FString GetObjectId() const;
-	TMap<FString, FLCValue> GetServerData() const;
+	TLCMap GetServerData() const;
 
 	bool ParseTime(const FString& InTimeString, FDateTime& OutTime) const;
 
@@ -58,5 +58,5 @@ protected:
 
 private:
 	
-	TMap<FString, FLCValue> ServerData;
+	TLCMap ServerData;
 };
