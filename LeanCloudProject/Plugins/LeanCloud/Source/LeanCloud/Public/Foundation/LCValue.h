@@ -4,32 +4,21 @@
 #include "Dom/JsonObject.h"
 
 struct FLCValueBase;
+struct FLCValue;
 class FLCObject;
-
-// None,
-// String,
-// Integer,
-// UInteger,
-// Double,
-// Boolean,
-// Array,
-// Map,
-// Time,
-// GeoPoint,
-// Object
+typedef TMap<FString, FLCValue> TLCMap;
+typedef TArray<FLCValue> TLCArray;
 
 struct LEANCLOUD_API FLCValue {
 
 	FLCValue();
 	FLCValue(const FString& InValue);
 	FLCValue(int InValue);
-	FLCValue(unsigned int InValue);
 	FLCValue(int64 InValue);
-	FLCValue(uint64 InValue);
 	FLCValue(double InValue);
 	FLCValue(bool InValue);
-	FLCValue(const TArray<FLCValue>& InValue);
-	FLCValue(const TMap<FString, FLCValue>& InValue);
+	FLCValue(const TLCArray& InValue);
+	FLCValue(const TLCMap& InValue);
 	FLCValue(const FDateTime& InValue);
 	FLCValue(const FLCGeoPoint& InValue);
 	FLCValue(const FLCObject& InValue);
@@ -43,17 +32,16 @@ struct LEANCLOUD_API FLCValue {
 
 	template <typename... LCValueType>
 	FLCValue(const LCValueType&... Values) {
-		TArray<FLCValue> TempArray;
+		TLCArray TempArray;
 		AddArrayValue(TempArray, Values...);
 	}
 
 	bool IsNoneType();
 	bool IsStringType();
-	bool IsSignedIntType();
-	bool IsUnsignedIntType();
 	bool IsDoubleType();
 	bool IsIntegerType();
 	bool IsNumberType();
+	bool IsBooleanType();
 	bool IsArrayType();
 	bool IsMapType();
 	bool IsDateType();
@@ -63,13 +51,13 @@ struct LEANCLOUD_API FLCValue {
 
 	FString AsString();
 	int64 AsInteger();
-	uint64 AsUInteger();
 	double AsDouble();
-	TArray<FLCValue> AsArray();
-	TMap<FString, FLCValue> AsMap();
+	bool AsBoolean();
+	TLCArray& AsArray();
+	TLCMap& AsMap();
 	FDateTime AsDate();
 	FLCGeoPoint AsGeoPoint();
-	FLCObject AsObject();
+	FLCObject& AsObject();
 	TArray<uint8> AsData();
 
 	~FLCValue();
@@ -77,16 +65,16 @@ struct LEANCLOUD_API FLCValue {
 private:
 
 	void SetStringValue(const FString& InValue);
-	void SetArrayValue(const TArray<FLCValue>& InValue);
+	void SetArrayValue(const TLCArray& InValue);
 
 	template <typename LCValueType>
-	void AddArrayValue(TArray<FLCValue>& Current, const LCValueType& InValue) {
+	void AddArrayValue(TLCArray& Current, const LCValueType& InValue) {
 		Current.Add(FLCValue(InValue));
 		SetArrayValue(Current);
 	}
 	
 	template <typename LCValueType, typename... OtherLCValueTypes>
-	void AddArrayValue(TArray<FLCValue>& Current, const LCValueType& InValue, const OtherLCValueTypes&... OtherValues) {
+	void AddArrayValue(TLCArray& Current, const LCValueType& InValue, const OtherLCValueTypes&... OtherValues) {
 		Current.Add(FLCValue(InValue));
 		AddArrayValue(Current, OtherValues...);
 	}

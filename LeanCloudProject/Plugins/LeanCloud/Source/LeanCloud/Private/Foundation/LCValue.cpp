@@ -11,19 +11,11 @@ FLCValue::FLCValue(const FString& InValue) {
 }
 
 FLCValue::FLCValue(int InValue) {
-	ValuePtr = MakeShared<FLCValueSignedInt>(InValue);
-}
-
-FLCValue::FLCValue(unsigned InValue) {
-	ValuePtr = MakeShared<FLCValueUnsignedInt>(InValue);
+	ValuePtr = MakeShared<FLCValueInteger>(InValue);
 }
 
 FLCValue::FLCValue(int64 InValue) {
-	ValuePtr = MakeShared<FLCValueSignedInt>(InValue);
-}
-
-FLCValue::FLCValue(uint64 InValue) {
-	ValuePtr = MakeShared<FLCValueUnsignedInt>(InValue);
+	ValuePtr = MakeShared<FLCValueInteger>(InValue);
 }
 
 FLCValue::FLCValue(double InValue) {
@@ -34,11 +26,11 @@ FLCValue::FLCValue(bool InValue) {
 	ValuePtr = MakeShared<FLCValueBoolean>(InValue);
 }
 
-FLCValue::FLCValue(const TArray<FLCValue>& InValue) {
+FLCValue::FLCValue(const TLCArray& InValue) {
 	ValuePtr = MakeShared<FLCValueArray>(InValue);
 }
 
-FLCValue::FLCValue(const TMap<FString, FLCValue>& InValue) {
+FLCValue::FLCValue(const TLCMap& InValue) {
 	ValuePtr = MakeShared<FLCValueMap>(InValue);
 }
 
@@ -66,24 +58,20 @@ bool FLCValue::IsStringType() {
 	return ValuePtr->ValueType == ELCValueType::String;
 }
 
-bool FLCValue::IsSignedIntType() {
-	return ValuePtr->ValueType == ELCValueType::SignedInt;
-}
-
-bool FLCValue::IsUnsignedIntType() {
-	return ValuePtr->ValueType == ELCValueType::UnsignedInt;
-}
-
 bool FLCValue::IsDoubleType() {
 	return ValuePtr->ValueType == ELCValueType::Double;
 }
 
 bool FLCValue::IsIntegerType() {
-	return IsSignedIntType() || IsUnsignedIntType();
+	return ValuePtr->ValueType == ELCValueType::Integer;
 }
 
 bool FLCValue::IsNumberType() {
 	return IsIntegerType() || IsDoubleType();
+}
+
+bool FLCValue::IsBooleanType() {
+	return ValuePtr->ValueType == ELCValueType::Boolean;
 }
 
 bool FLCValue::IsArrayType() {
@@ -119,19 +107,19 @@ int64 FLCValue::AsInteger() {
 	return ValuePtr->AsInteger();
 }
 
-uint64 FLCValue::AsUInteger() {
-	return ValuePtr->AsUInteger();
-}
-
 double FLCValue::AsDouble() {
 	return ValuePtr->AsDouble();
 }
 
-TArray<FLCValue> FLCValue::AsArray() {
+bool FLCValue::AsBoolean() {
+	return ValuePtr->AsDouble();
+}
+
+TLCArray& FLCValue::AsArray() {
 	return ValuePtr->AsArray();
 }
 
-TMap<FString, FLCValue> FLCValue::AsMap() {
+TLCMap& FLCValue::AsMap() {
 	return ValuePtr->AsMap();
 }
 
@@ -143,7 +131,7 @@ FLCGeoPoint FLCValue::AsGeoPoint() {
 	return ValuePtr->AsGeoPoint();
 }
 
-FLCObject FLCValue::AsObject() {
+FLCObject& FLCValue::AsObject() {
 	return ValuePtr->AsObject();
 }
 
@@ -159,6 +147,6 @@ void FLCValue::SetStringValue(const FString& InValue) {
 	ValuePtr = MakeShared<FLCValueString>(InValue);
 }
 
-void FLCValue::SetArrayValue(const TArray<FLCValue>& InValue) {
+void FLCValue::SetArrayValue(const TLCArray& InValue) {
 	ValuePtr = MakeShared<FLCValueArray>(InValue);
 }

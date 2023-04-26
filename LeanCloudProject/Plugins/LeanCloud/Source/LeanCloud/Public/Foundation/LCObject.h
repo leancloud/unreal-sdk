@@ -5,14 +5,13 @@
 #include "Dom/JsonObject.h"
 
 DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const FLCError& Error);
-typedef TMap<FString, FLCValue> TLCMap;
 
 class LEANCLOUD_API FLCObject : TSharedFromThis<FLCObject>{
 public:
 	
-	FLCObject(const FString& InClassName, const TMap<FString, FLCValue>& InServerData);
+	FLCObject(const FString& InClassName, const TLCMap& InServerData);
 	FLCObject(const FString& InClassName);
-	FLCObject(const TMap<FString, FLCValue>& InServerData);
+	FLCObject(const TLCMap& InServerData);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
 	virtual ~FLCObject();
 

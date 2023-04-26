@@ -1,29 +1,43 @@
 #include "LCObject.h"
-static FString KeyClassName;
-static FString KeyCreatedAt;
-static FString KeyUpdateAt;
-static FString KeyObjectID;
+static FString KeyClassName = "className";
+static FString KeyCreatedAt = "createdAt";
+static FString KeyUpdateAt = "updatedAt";
+static FString KeyObjectID = "objectId";
+static FString KeyACL = "ACL";
+static FString KeyIgnoreHooks = "__ignore_hooks";
 
-FLCObject::FLCObject(const FString& InClassName, const TMap<FString, FLCValue>& InServerData) {
+FLCObject::FLCObject(const FString& InClassName, const TLCMap& InServerData) {
+	ServerData = TLCMap(InServerData);
+	ServerData.Add(KeyClassName, InClassName);
 }
 
 FLCObject::FLCObject(const FString& InClassName) {
+	ServerData.Add(KeyClassName, InClassName);
 }
 
-FLCObject::FLCObject(const TMap<FString, FLCValue>& InServerData) {
+FLCObject::FLCObject(const TLCMap& InServerData) {
+	ServerData = TLCMap(InServerData);
 }
 
 FLCObject::FLCObject(const FString& InClassName, const FString& InObjectId) {
+	ServerData.Add(KeyClassName, InClassName);
+	ServerData.Add(KeyObjectID, InObjectId);
 }
 
 FLCObject::~FLCObject() {
 }
 
 void FLCObject::Set(const FString& Key, const FLCValue& Value) {
+	ServerData.Add(Key, Value);
 }
 
 FLCValue FLCObject::Get(const FString& Key) const {
-	return FLCValue();
+	const FLCValue *ValuePtr = ServerData.Find(Key);
+	if (ValuePtr == nullptr) {
+		return FLCValue();
+	} else {
+		return *ValuePtr;
+	}
 }
 
 void FLCObject::Increase(const FString& Key, int64 Value) {
@@ -79,22 +93,22 @@ void FLCObject::Delete(const TArray<FLCObject>& Objects, FLeanCloudBoolResultDel
 }
 
 FString FLCObject::GetClassName() const {
-	return "";
+	return Get(KeyClassName).AsString();
 }
 
 FDateTime FLCObject::GetCreatedAt() const {
-	return FDateTime();
+	return Get(KeyCreatedAt).AsDate();
 }
 
 FDateTime FLCObject::GetUpdatedAt() const {
-	return FDateTime();
+	return Get(KeyUpdateAt).AsDate();
 }
 
 FString FLCObject::GetObjectId() const {
-	return "";
+	return Get(KeyObjectID).AsString();;
 }
 
-TMap<FString, FLCValue> FLCObject::GetServerData() const {
+TLCMap FLCObject::GetServerData() const {
 	return ServerData;
 }
 
@@ -106,13 +120,17 @@ FLCObject::FLCObject() {
 }
 
 void FLCObject::SetObjectId(const FString& InObjectId) {
+	Set(KeyObjectID, InObjectId);
 }
 
 void FLCObject::SetClassName(const FString& InClassName) {
+	Set(KeyClassName, InClassName);
 }
 
 void FLCObject::SetCreatedAt(FDateTime InTime) {
+	Set(KeyCreatedAt, InTime);
 }
 
 void FLCObject::SetUpdatedAt(FDateTime InTime) {
+	Set(KeyUpdateAt, InTime);
 }
