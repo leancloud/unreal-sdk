@@ -42,7 +42,7 @@ FLCValue::FLCValue(const FLCGeoPoint& InValue) {
 	ValuePtr = MakeShared<FLCValueGeoPoint>(InValue);
 }
 
-FLCValue::FLCValue(const FLCObject& InValue) {
+FLCValue::FLCValue(const TSharedPtr<FLCObject>& InValue) {
 	ValuePtr = MakeShared<FLCValueObject>(InValue);
 }
 
@@ -50,52 +50,52 @@ FLCValue::FLCValue(const TArray<uint8>& InValue) {
 	ValuePtr = MakeShared<FLCValueData>(InValue);
 }
 
-bool FLCValue::IsNoneType() {
+bool FLCValue::IsNoneType() const {
 	return ValuePtr->ValueType == ELCValueType::None;
 }
 
-bool FLCValue::IsStringType() {
+bool FLCValue::IsStringType() const {
 	return ValuePtr->ValueType == ELCValueType::String;
 }
 
-bool FLCValue::IsDoubleType() {
+bool FLCValue::IsDoubleType() const {
 	return ValuePtr->ValueType == ELCValueType::Double;
 }
 
-bool FLCValue::IsIntegerType() {
+bool FLCValue::IsIntegerType() const {
 	return ValuePtr->ValueType == ELCValueType::Integer;
 }
 
-bool FLCValue::IsNumberType() {
+bool FLCValue::IsNumberType() const {
 	return IsIntegerType() || IsDoubleType();
 }
 
-bool FLCValue::IsBooleanType() {
+bool FLCValue::IsBooleanType() const {
 	return ValuePtr->ValueType == ELCValueType::Boolean;
 }
 
-bool FLCValue::IsArrayType() {
+bool FLCValue::IsArrayType() const {
 	return ValuePtr->ValueType == ELCValueType::Array;
 }
 
-bool FLCValue::IsMapType() {
+bool FLCValue::IsMapType() const {
 	return ValuePtr->ValueType == ELCValueType::Map;
 }
 
-bool FLCValue::IsDateType() {
+bool FLCValue::IsDateType() const {
 	return ValuePtr->ValueType == ELCValueType::Date;
 }
 
-bool FLCValue::IsGeoPointType() {
+bool FLCValue::IsGeoPointType() const {
 	return ValuePtr->ValueType == ELCValueType::GeoPoint;
 
 }
 
-bool FLCValue::IsObjectType() {
+bool FLCValue::IsObjectType() const {
 	return ValuePtr->ValueType == ELCValueType::Object;
 }
 
-bool FLCValue::IsDataType() {
+bool FLCValue::IsDataType() const {
 	return ValuePtr->ValueType == ELCValueType::Data;
 }
 
@@ -131,7 +131,7 @@ FLCGeoPoint FLCValue::AsGeoPoint() {
 	return ValuePtr->AsGeoPoint();
 }
 
-FLCObject& FLCValue::AsObject() {
+TSharedPtr<FLCObject> FLCValue::AsObject() {
 	return ValuePtr->AsObject();
 }
 

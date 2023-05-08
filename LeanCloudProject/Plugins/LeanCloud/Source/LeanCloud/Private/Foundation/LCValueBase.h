@@ -29,8 +29,13 @@ struct FLCValueBase {
 	virtual TLCMap& AsMap();
 	virtual FDateTime AsDate() { return FDateTime(); }
 	virtual FLCGeoPoint AsGeoPoint() { return FLCGeoPoint(); }
-	virtual FLCObject& AsObject();
+	virtual TSharedPtr<FLCObject> AsObject() {return nullptr;}
 	virtual TArray<uint8> AsData() { return {}; }
+
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs)
+	{
+		return ValueType == Rhs->ValueType;
+	}
 
 	ELCValueType ValueType;
 protected:
@@ -58,6 +63,9 @@ struct FLCValueString : FLCValueBase {
 	virtual int64 AsInteger() override;
 	virtual double AsDouble() override;
 	virtual bool AsBoolean() override;
+
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
+
 protected:
 	FString Value;
 	virtual FString GetType() const override { return TEXT("String"); };
@@ -72,6 +80,8 @@ struct FLCValueInteger : FLCValueBase {
 	virtual int64 AsInteger() override;
 	virtual double AsDouble() override;
 	virtual bool AsBoolean() override;
+
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	int64 Value;
 	virtual FString GetType() const override { return TEXT("Integer"); };
@@ -86,6 +96,8 @@ struct FLCValueDouble : FLCValueBase {
 	virtual int64 AsInteger() override;
 	virtual double AsDouble() override;
 	virtual bool AsBoolean() override;
+
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	double Value;
 	virtual FString GetType() const override { return TEXT("Double"); };
@@ -100,6 +112,8 @@ struct FLCValueBoolean : FLCValueBase {
 	virtual int64 AsInteger() override;
 	virtual double AsDouble() override;
 	virtual bool AsBoolean() override;
+
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	bool Value;
 	virtual FString GetType() const override { return TEXT("Boolean"); };
@@ -110,6 +124,7 @@ struct FLCValueArray : FLCValueBase {
 		ValueType = ELCValueType::Array;
 	}
 	virtual TLCArray& AsArray() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	TLCArray Value;
 	virtual FString GetType() const override { return TEXT("Array"); };
@@ -120,18 +135,20 @@ struct FLCValueMap : FLCValueBase {
 		ValueType = ELCValueType::Map;
 	}
 	virtual TLCMap& AsMap() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	TLCMap Value;
 	virtual FString GetType() const override { return TEXT("Map"); };
 };
 
 struct FLCValueObject : FLCValueBase {
-	FLCValueObject(const FLCObject& InValue) : Value(InValue) {
+	FLCValueObject(const TSharedPtr<FLCObject>& InValue) : Value(InValue) {
 		ValueType = ELCValueType::Object;
 	}
-	virtual FLCObject& AsObject() override;
+	virtual TSharedPtr<FLCObject> AsObject() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
-	FLCObject Value;
+	TSharedPtr<FLCObject> Value;
 	virtual FString GetType() const override { return TEXT("Object"); };
 };
 
@@ -140,6 +157,7 @@ struct FLCValueDate : FLCValueBase {
 		ValueType = ELCValueType::Date;
 	}
 	virtual FDateTime AsDate() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	FDateTime Value;
 	virtual FString GetType() const override { return TEXT("Date"); };
@@ -150,6 +168,7 @@ struct FLCValueGeoPoint : FLCValueBase {
 		ValueType = ELCValueType::GeoPoint;
 	}
 	virtual FLCGeoPoint AsGeoPoint() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	FLCGeoPoint Value;
 	virtual FString GetType() const override { return TEXT("GeoPoint"); };
@@ -160,6 +179,7 @@ struct FLCValueData : FLCValueBase {
 		ValueType = ELCValueType::Data;
 	}
 	virtual TArray<uint8> AsData() override;
+	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	TArray<uint8> Value;
 	virtual FString GetType() const override { return TEXT("Data"); };

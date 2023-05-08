@@ -6,6 +6,10 @@ struct LEANCLOUD_API FLCGeoPoint {
 	FLCGeoPoint() = default;
 	FLCGeoPoint(double InLatitude, double InLongitude): Latitude(InLatitude), Longitude(InLongitude){};
 
+	FORCEINLINE bool operator==(const FLCGeoPoint& Rhs) {
+		return Latitude == Rhs.Latitude && Longitude == Rhs.Longitude;
+	};
+
 	double DistanceInKilometersTo(const FLCGeoPoint& GeoPoint);
 	double DistanceInMilesTo(const FLCGeoPoint& GeoPoint);
 	double DistanceInRadiansTo(const FLCGeoPoint& GeoPoint);

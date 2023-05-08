@@ -1,5 +1,7 @@
 #include "LCHelper.h"
 
+#include "Async/Async.h"
+
 FString FLCHelper::GetSystemName() {
 	FString OS;
 #if PLATFORM_IOS
@@ -14,6 +16,20 @@ FString FLCHelper::GetSystemName() {
 	OS = "Linux";
 #endif
 	return OS;
+}
+
+void FLCHelper::PerformOnGameThread(TFunction<void()> Function) {
+	if (!Function) {
+		return;
+	}
+	if (IsInGameThread())
+	{
+		Function();
+	}
+	else
+	{
+		AsyncTask(ENamedThreads::GameThread, Function);
+	}
 }
 
 

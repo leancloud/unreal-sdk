@@ -21,7 +21,7 @@ struct LEANCLOUD_API FLCValue {
 	FLCValue(const TLCMap& InValue);
 	FLCValue(const FDateTime& InValue);
 	FLCValue(const FLCGeoPoint& InValue);
-	FLCValue(const FLCObject& InValue);
+	FLCValue(const TSharedPtr<FLCObject>& InValue);
 	FLCValue(const TArray<uint8>& InValue);
 
 	template <typename CharType,
@@ -36,18 +36,28 @@ struct LEANCLOUD_API FLCValue {
 		AddArrayValue(TempArray, Values...);
 	}
 
-	bool IsNoneType();
-	bool IsStringType();
-	bool IsDoubleType();
-	bool IsIntegerType();
-	bool IsNumberType();
-	bool IsBooleanType();
-	bool IsArrayType();
-	bool IsMapType();
-	bool IsDateType();
-	bool IsGeoPointType();
-	bool IsObjectType();
-	bool IsDataType();
+	FORCEINLINE friend bool operator==(const FLCValue& Lhs, const FLCValue& Rhs)
+	{
+		return Lhs.ValuePtr == Rhs.ValuePtr;
+	}
+
+	FORCEINLINE friend bool operator!=(const FLCValue& Lhs, const FLCValue& Rhs)
+	{
+		return !(Lhs == Rhs);
+	}
+
+	bool IsNoneType() const;
+	bool IsStringType() const;
+	bool IsDoubleType() const;
+	bool IsIntegerType() const;
+	bool IsNumberType() const;
+	bool IsBooleanType() const;
+	bool IsArrayType() const;
+	bool IsMapType() const;
+	bool IsDateType() const;
+	bool IsGeoPointType() const;
+	bool IsObjectType() const;
+	bool IsDataType() const;
 
 	FString AsString();
 	int64 AsInteger();
@@ -57,7 +67,7 @@ struct LEANCLOUD_API FLCValue {
 	TLCMap& AsMap();
 	FDateTime AsDate();
 	FLCGeoPoint AsGeoPoint();
-	FLCObject& AsObject();
+	TSharedPtr<FLCObject> AsObject();
 	TArray<uint8> AsData();
 
 	~FLCValue();

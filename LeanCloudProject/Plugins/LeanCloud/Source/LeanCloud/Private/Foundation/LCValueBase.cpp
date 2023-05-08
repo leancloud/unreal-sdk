@@ -10,11 +10,6 @@ TLCMap& FLCValueBase::AsMap() {
 	return Temp;
 }
 
-FLCObject& FLCValueBase::AsObject() {
-	static FLCObject Temp = FLCObject(FString());
-	return Temp;
-}
-
 FString FLCValueString::AsString() {
 	return Value;
 }
@@ -37,6 +32,13 @@ bool FLCValueString::AsBoolean() {
 	return Result;
 }
 
+bool FLCValueString::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::String) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueString>(Rhs)->Value;
+}
+
 FString FLCValueInteger::AsString() {
 	return LexToString(Value);
 }
@@ -51,6 +53,13 @@ double FLCValueInteger::AsDouble() {
 
 bool FLCValueInteger::AsBoolean() {
 	return Value;
+}
+
+bool FLCValueInteger::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Integer) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueInteger>(Rhs)->Value;
 }
 
 FString FLCValueDouble::AsString() {
@@ -93,18 +102,66 @@ TLCMap& FLCValueMap::AsMap() {
 	return Value;
 }
 
-FLCObject& FLCValueObject::AsObject() {
+bool FLCValueMap::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Map) {
+		return false;
+	}
+	auto RhsValue = StaticCastSharedPtr<FLCValueMap>(Rhs)->Value;
+	if (RhsValue.Num() != Value.Num()) {
+		return false;
+	}
+	for (auto Result : RhsValue) {
+		auto Ptr = Value.Find(Result.Key);
+		if (Ptr == nullptr) {
+			return false;
+		}
+		if (Result.Value != *Ptr) {
+			return false;
+		}
+	}
+	return true;
+}
+
+TSharedPtr<FLCObject> FLCValueObject::AsObject() {
 	return Value;
+}
+
+bool FLCValueObject::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Object) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueObject>(Rhs)->Value;
 }
 
 FDateTime FLCValueDate::AsDate() {
 	return Value;
 }
 
+bool FLCValueDate::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Date) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueDate>(Rhs)->Value;
+}
+
 FLCGeoPoint FLCValueGeoPoint::AsGeoPoint() {
 	return Value;
 }
 
+bool FLCValueGeoPoint::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::GeoPoint) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueGeoPoint>(Rhs)->Value;
+}
+
 TArray<uint8> FLCValueData::AsData() {
 	return Value;
+}
+
+bool FLCValueData::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
+	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Data) {
+		return false;
+	}
+	return Value == StaticCastSharedPtr<FLCValueData>(Rhs)->Value;
 }

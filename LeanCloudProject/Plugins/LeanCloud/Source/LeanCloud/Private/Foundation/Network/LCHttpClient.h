@@ -1,17 +1,8 @@
 #pragma once
 #include "LCApplication.h"
-#include "LCHttpClient.generated.h"
+#include "LCHttpRequest.h"
+#include "LCValue.h"
 
-UENUM()
-enum class ELCHttpMethod :uint8
-{
-	GET,
-	POST,
-	PUT,
-	DELETE,
-};
-
-UENUM()
 enum class ELCHttpDataType :uint8
 {
 	Object,
@@ -37,10 +28,12 @@ public:
 	};
 
 	FLCHttpClient(const TSharedPtr<FLCApplication>& Ptr): ApplicationPtr(Ptr) {};
+	void Request(const FLCHttpRequest& LCRequest);
 private:
 	TWeakPtr<FLCApplication> ApplicationPtr;
 
 	FString CreateRequestSignature();
+	FString CombinParameters(const TLCMap& Parameters, bool isEncode);
 
 	TMap<FString, FString> CreateCommonHeaders();
 };

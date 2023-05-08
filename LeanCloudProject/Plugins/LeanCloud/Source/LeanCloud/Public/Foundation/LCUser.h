@@ -7,7 +7,7 @@ DECLARE_DELEGATE_TwoParams(FLeanCloudUserDelegate, TSharedPtr<FLCUser> UserPtr, 
 class LEANCLOUD_API FLCUser : public FLCObject {
 public:
 	virtual ~FLCUser() override;
-
+	virtual FString GetEndpoint() override;
 	void SetUsername(const FString& InUserName);
 	void SetPassword(const FString& InPassword);
 	void SetEmail(const FString& InEmail);

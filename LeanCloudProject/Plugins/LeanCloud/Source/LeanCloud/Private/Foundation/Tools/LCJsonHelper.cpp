@@ -73,6 +73,6 @@ FString FLCJsonHelper::GetJsonString(const TLCArray& Value, bool bNeedNull) {
 	return JsonStr;
 }
 
-FString FLCJsonHelper::GetJsonString(const FLCObject& Value, bool bNeedNull) {
+FString FLCJsonHelper::GetJsonString(const TSharedPtr<FLCObject>& Value, bool bNeedNull) {
 	return "";
 }
