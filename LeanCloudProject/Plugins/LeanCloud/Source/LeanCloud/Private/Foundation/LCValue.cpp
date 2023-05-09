@@ -50,6 +50,21 @@ FLCValue::FLCValue(const TArray<uint8>& InValue) {
 	ValuePtr = MakeShared<FLCValueData>(InValue);
 }
 
+bool FLCValue::operator==(const FLCValue& Rhs)
+{
+	return *ValuePtr.Get() == Rhs.ValuePtr;
+}
+
+bool FLCValue::operator!=(const FLCValue& Rhs)
+{
+	return !(*this == Rhs);
+}
+
+FLCValue FLCValue::GetLconValue()
+{
+	return ValuePtr->GetLconValue();
+}
+
 bool FLCValue::IsNoneType() const {
 	return ValuePtr->ValueType == ELCValueType::None;
 }

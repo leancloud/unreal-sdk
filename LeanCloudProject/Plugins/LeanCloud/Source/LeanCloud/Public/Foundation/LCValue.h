@@ -35,16 +35,17 @@ struct LEANCLOUD_API FLCValue {
 		TLCArray TempArray;
 		AddArrayValue(TempArray, Values...);
 	}
+	
+	FLCValue(FLCValue&&) = default;
+	FLCValue(const FLCValue&) = default;
+	FLCValue& operator=(FLCValue&&) = default;
+	FLCValue& operator=(const FLCValue&) = default;
 
-	FORCEINLINE friend bool operator==(const FLCValue& Lhs, const FLCValue& Rhs)
-	{
-		return Lhs.ValuePtr == Rhs.ValuePtr;
-	}
+	bool operator==(const FLCValue& Rhs);
+	
+	bool operator!=(const FLCValue& Rhs);
 
-	FORCEINLINE friend bool operator!=(const FLCValue& Lhs, const FLCValue& Rhs)
-	{
-		return !(Lhs == Rhs);
-	}
+	FLCValue GetLconValue();
 
 	bool IsNoneType() const;
 	bool IsStringType() const;

@@ -13,5 +13,7 @@ UCLASS()
 class LEANCLOUDPROJECT_API ALeanCloudProjectGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	ALeanCloudProjectGameModeBase();
 };

@@ -6,7 +6,7 @@
 #include "LeanCloudSettings.generated.h"
 
 USTRUCT()
-struct FLCAppConfigSettings
+struct LEANCLOUD_API FLCAppConfigSettings
 {
 	GENERATED_BODY()
 
@@ -19,7 +19,7 @@ struct FLCAppConfigSettings
 };
 
 USTRUCT()
-struct FLCApplicationSettings
+struct LEANCLOUD_API FLCApplicationSettings
 {
 	GENERATED_BODY()
 
@@ -43,7 +43,7 @@ struct FLCApplicationSettings
 * Implements the settings for the LeanCloud plugin.
 */
 UCLASS(Config = Engine, DefaultConfig)
-class ULeanCloudSettings : public UObject
+class LEANCLOUD_API ULeanCloudSettings : public UObject
 {
 	GENERATED_UCLASS_BODY()
 
