@@ -65,6 +65,10 @@ FLCValue FLCValue::GetLconValue()
 	return ValuePtr->GetLconValue();
 }
 
+void FLCValue::Reset() {
+	ValuePtr = MakeShared<FLCValueNone>();
+}
+
 bool FLCValue::IsNoneType() const {
 	return ValuePtr->ValueType == ELCValueType::None;
 }
@@ -114,43 +118,43 @@ bool FLCValue::IsDataType() const {
 	return ValuePtr->ValueType == ELCValueType::Data;
 }
 
-FString FLCValue::AsString() {
+FString FLCValue::AsString() const {
 	return ValuePtr->AsString();
 }
 
-int64 FLCValue::AsInteger() {
+int64 FLCValue::AsInteger() const {
 	return ValuePtr->AsInteger();
 }
 
-double FLCValue::AsDouble() {
+double FLCValue::AsDouble() const {
 	return ValuePtr->AsDouble();
 }
 
-bool FLCValue::AsBoolean() {
+bool FLCValue::AsBoolean() const {
 	return ValuePtr->AsDouble();
 }
 
-TLCArray& FLCValue::AsArray() {
+TLCArray& FLCValue::AsArray() const {
 	return ValuePtr->AsArray();
 }
 
-TLCMap& FLCValue::AsMap() {
+TLCMap& FLCValue::AsMap() const {
 	return ValuePtr->AsMap();
 }
 
-FDateTime FLCValue::AsDate() {
+FDateTime FLCValue::AsDate() const {
 	return ValuePtr->AsDate();
 }
 
-FLCGeoPoint FLCValue::AsGeoPoint() {
+FLCGeoPoint FLCValue::AsGeoPoint() const {
 	return ValuePtr->AsGeoPoint();
 }
 
-TSharedPtr<FLCObject> FLCValue::AsObject() {
+TSharedPtr<FLCObject> FLCValue::AsObject() const {
 	return ValuePtr->AsObject();
 }
 
-TArray<uint8> FLCValue::AsData() {
+TArray<uint8> FLCValue::AsData() const {
 	return ValuePtr->AsData();
 }
 

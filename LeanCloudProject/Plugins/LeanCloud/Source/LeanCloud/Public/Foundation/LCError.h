@@ -27,6 +27,9 @@ enum class ELCErrorCode {
 
 	NoApplication = 10000,
 	NoObject = 10001,
+	CircularReference = 10002,
+	RequestNetworkError = 10003,
+	RequestClientError = 10004,
 };
 
 inline const TCHAR* LexToString(ELCErrorCode ErrorCode) {
@@ -46,6 +49,11 @@ inline const TCHAR* LexToString(ELCErrorCode ErrorCode) {
 	case ELCErrorCode::Inconsistency: return TEXT("Internal inconsistency exception"); break;
 	case ELCErrorCode::NoApplication: return TEXT("Application not specified"); break;
 	case ELCErrorCode::NoObject: return TEXT("Object is Invalid"); break;
+	case ELCErrorCode::CircularReference: return TEXT("Circular reference."); break;
+	case ELCErrorCode::RequestNetworkError: return TEXT("Network Error."); break;
+	case ELCErrorCode::RequestClientError: return TEXT("Client Error."); break;
+
+
 		default: return TEXT("");
 	}
 }

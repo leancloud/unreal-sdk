@@ -65,6 +65,7 @@ protected:
 	void SetUpdatedAt(FDateTime InTime);
 
 private:
+	friend class FLCObjectUpdater;
 	TWeakPtr<FLCApplication> ApplicationPtr;
 	TLCMap ServerData;
 	TLCMap Operations;

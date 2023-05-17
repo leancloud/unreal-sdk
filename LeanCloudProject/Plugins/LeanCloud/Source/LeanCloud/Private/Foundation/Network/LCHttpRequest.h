@@ -22,12 +22,14 @@ inline const TCHAR* LexToString(ELCHttpMethod HttpMethod) {
 class FLCHttpRequest {
 public:
 	ELCHttpMethod HttpMethod = ELCHttpMethod::GET;
-	FString Path;
+	void SetUrl(const FString& InUrl);
+	FString GetOriginUrl() const;
+	FString GetUrl() const;
+	
 	TMap<FString, FString> Headers;
 	TLCMap UrlParameters;
 	TLCMap BodyParameters;
-
-	static FString GetBatchRequestPath(const FString& Path);
-	static TLCMap GenerateBatchRequest(ELCHttpMethod InHttpMethod, const TLCMap& InParas, const TSharedPtr<FLCObject>& Object);
-	static TLCMap GenerateBatchRequestBody(const TSharedPtr<FLCObject>& Object);
+	static  FString UrlEncodingParameters(const TLCMap& Parameters);
+private:
+	FString Url;
 };

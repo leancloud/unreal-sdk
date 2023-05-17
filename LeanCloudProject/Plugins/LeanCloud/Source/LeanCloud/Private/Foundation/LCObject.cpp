@@ -1,5 +1,6 @@
 #include "LCObject.h"
 
+#include "LCObjectUpdater.h"
 #include "Tools/LCHelper.h"
 static FString KeyClassName = "className";
 static FString KeyCreatedAt = "createdAt";
@@ -7,48 +8,6 @@ static FString KeyUpdateAt = "updatedAt";
 static FString KeyObjectID = "objectId";
 static FString KeyACL = "ACL";
 static FString KeyIgnoreHooks = "__ignore_hooks";
-
-static bool ValidateApplicationsAreSame(const TArray<TSharedPtr<FLCObject>>& Objects,
-                                        const FLeanCloudBoolResultDelegate& CallBack = nullptr) {
-	if (Objects.Num() == 0) {
-		FLCHelper::PerformOnGameThread([=]() {
-			CallBack.ExecuteIfBound(false, FLCError((int)ELCErrorCode::ObjectNotFound, "No Object"));
-		});
-		return false;
-	}
-	for (auto FlcObject : Objects) {
-		if (!FlcObject.IsValid()) {
-			FLCHelper::PerformOnGameThread([=]() {
-				CallBack.ExecuteIfBound(false, FLCError((int)ELCErrorCode::ObjectNotFound, "Some Object is invalid"));
-			});
-			return false;
-		}
-	}
-	auto FirstPtr = Objects[0]->GetApplicationPtr();
-	if (!FirstPtr.IsValid()) {
-		FLCHelper::PerformOnGameThread([=]() {
-			CallBack.ExecuteIfBound(false, FLCError(ELCErrorCode::NoApplication));
-		});
-		return false;
-	}
-	for (int i = 1; i < Objects.Num(); i++) {
-		auto Ptr = Objects[i]->GetApplicationPtr();
-		if (!Ptr.IsValid()) {
-			FLCHelper::PerformOnGameThread([=]() {
-				CallBack.ExecuteIfBound(false, FLCError(ELCErrorCode::NoApplication));
-			});
-			return false;
-		}
-		if (FirstPtr != Ptr) {
-			FLCHelper::PerformOnGameThread([=]() {
-				CallBack.ExecuteIfBound(false, FLCError((int)ELCErrorCode::Inconsistency,
-				                                        "the applications of the `objects` should be the same instance."));
-			});
-			return false;
-		}
-	}
-	return true;
-}
 
 void FLCObject::SetApplicationPtr(TSharedPtr<FLCApplication> InPtr) {
 	ApplicationPtr = InPtr;
@@ -216,11 +175,12 @@ void FLCObject::Delete(FLeanCloudBoolResultDelegate CallBack) {
 }
 
 void FLCObject::Save(const TArray<TSharedPtr<FLCObject>>& Objects, FLeanCloudBoolResultDelegate CallBack) {
-	// MoveTemp(Other);
+	FLCObjectUpdater::Save(Objects, MoveTemp(CallBack));
 }
 
 void FLCObject::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const FLCSaveOption& Option,
 	FLeanCloudBoolResultDelegate CallBack) {
+	FLCObjectUpdater::Save(Objects, Option, MoveTemp(CallBack));
 }
 
 void FLCObject::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, FLeanCloudBoolResultDelegate CallBack) {
@@ -229,9 +189,11 @@ void FLCObject::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, FLeanCloudBo
 
 void FLCObject::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const TArray<FString>& Keys,
 	FLeanCloudBoolResultDelegate CallBack) {
+	FLCObjectUpdater::Fetch(Objects, Keys, MoveTemp(CallBack));
 }
 
 void FLCObject::Delete(const TArray<TSharedPtr<FLCObject>>& Objects, FLeanCloudBoolResultDelegate CallBack) {
+	FLCObjectUpdater::Delete(Objects, MoveTemp(CallBack));
 }
 
 FString FLCObject::GetClassName() const {

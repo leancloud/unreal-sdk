@@ -243,6 +243,10 @@ FDateTime FLCValueDate::AsDate() {
 	return Value;
 }
 
+FString FLCValueDate::AsString() {
+	return Value.ToIso8601();
+}
+
 bool FLCValueDate::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
 	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::Date) {
 		return false;
@@ -287,6 +291,10 @@ FLCValue FLCValueData::GetLconValue()
 
 TArray<uint8> FLCValueData::AsData() {
 	return Value;
+}
+
+FString FLCValueData::AsString() {
+	return FBase64::Encode(Value);
 }
 
 bool FLCValueData::operator==(const TSharedPtr<FLCValueBase>& Rhs) {

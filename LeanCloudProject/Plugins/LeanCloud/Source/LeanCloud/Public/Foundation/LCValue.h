@@ -47,6 +47,8 @@ struct LEANCLOUD_API FLCValue {
 
 	FLCValue GetLconValue();
 
+	void Reset();
+
 	bool IsNoneType() const;
 	bool IsStringType() const;
 	bool IsDoubleType() const;
@@ -60,16 +62,16 @@ struct LEANCLOUD_API FLCValue {
 	bool IsObjectType() const;
 	bool IsDataType() const;
 
-	FString AsString();
-	int64 AsInteger();
-	double AsDouble();
-	bool AsBoolean();
-	TLCArray& AsArray();
-	TLCMap& AsMap();
-	FDateTime AsDate();
-	FLCGeoPoint AsGeoPoint();
-	TSharedPtr<FLCObject> AsObject();
-	TArray<uint8> AsData();
+	FString AsString() const;
+	int64 AsInteger() const;
+	double AsDouble() const;
+	bool AsBoolean() const;
+	TLCArray& AsArray() const;
+	TLCMap& AsMap() const;
+	FDateTime AsDate() const;
+	FLCGeoPoint AsGeoPoint() const;
+	TSharedPtr<FLCObject> AsObject() const;
+	TArray<uint8> AsData() const;
 
 	~FLCValue();
 

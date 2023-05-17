@@ -1,40 +1,55 @@
 #include "LCHttpRequest.h"
 
-#include "LeanCloud.h"
+#include "GenericPlatform/GenericPlatformHttp.h"
 
-FString FLCHttpRequest::GetBatchRequestPath(const FString& Path) {
-	return FString("/") + LeanCloud_Unreal_Version / Path;
+void FLCHttpRequest::SetUrl(const FString& InUrl) {
+	Url = InUrl;
 }
 
-TLCMap FLCHttpRequest::GenerateBatchRequest(ELCHttpMethod InHttpMethod, const TLCMap& InParas,
-                                            const TSharedPtr<FLCObject>& Object) {
-	TLCMap Result;
-	if (!Object.IsValid()) {
-		FLCError::Throw(ELCErrorCode::NoObject);
-	}
-	Result.Add("method", LexToString(InHttpMethod));
-	if (InHttpMethod == ELCHttpMethod::POST) {
-		if (Object->GetObjectId().IsEmpty()) {
-			FLCError::Throw("Object ID is empty");
-		}
-		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint() / Object->GetObjectId()));
+FString FLCHttpRequest::GetOriginUrl() const {
+	return Url;
+}
+
+FString FLCHttpRequest::GetUrl() const {
+	if (Url.Contains(TEXT("?"))) {
+		return FString::Printf(TEXT("%s&%s"), *Url, *UrlEncodingParameters(UrlParameters));
 	} else {
-		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint()));
+		return FString::Printf(TEXT("%s?%s"), *Url, *UrlEncodingParameters(UrlParameters));
 	}
-	if (InParas.Num() > 0) {
-		Result.Add("params", InParas);
-	}
-	if (InHttpMethod == ELCHttpMethod::POST || InHttpMethod == ELCHttpMethod::PUT) {
-		if (!Object->GetObjectId().IsEmpty()) {
-			Result.Add("new", true);
-		}
-	}
-	return MoveTemp(Result);
 }
 
-TLCMap FLCHttpRequest::GenerateBatchRequestBody(const TSharedPtr<FLCObject>& Object) {
-	TLCMap Body;
-	Body.Add("__internalId", Object->GetInternalId());
-	TMap<FString, TSharedPtr<FLCObject>> Children;
-	return Body;
+TArray<TTuple<FString, FString>> LCQueryStringPairsFromKeyAndValue(const FString& Key, const FLCValue Value) {
+	TArray<TTuple<FString, FString>> QueryStringComponents;
+	
+	if (Value.IsMapType()) {
+		for (auto AsMap : Value.AsMap()) {
+			if (!AsMap.Value.IsNoneType()) {
+				FString SubKey;
+				if (Key.IsEmpty()) {
+					SubKey = AsMap.Key;
+				} else {
+					SubKey = FString::Printf(TEXT("%s[%s]"), *Key, *AsMap.Key);
+				}
+				QueryStringComponents.Append(LCQueryStringPairsFromKeyAndValue(SubKey, AsMap.Value));
+			}
+		}
+	} else if (Value.IsArrayType()) {
+		for (auto AsArray : Value.AsArray()) {
+			QueryStringComponents.Append(LCQueryStringPairsFromKeyAndValue(Key + "[]", AsArray));
+		}
+	} else {
+		QueryStringComponents.Add(TTuple<FString, FString>(Key, Value.AsString()));
+	}
+
+	return MoveTemp(QueryStringComponents);
 }
+
+FString FLCHttpRequest::UrlEncodingParameters(const TLCMap& Parameters) {
+	TArray<TTuple<FString, FString>> Pairs = LCQueryStringPairsFromKeyAndValue("", Parameters);
+	TArray<FString> KeyValues;
+	for (auto Parameter : Pairs) {
+		KeyValues.Add(FString::Printf(TEXT("%s=%s"), *FGenericPlatformHttp::UrlEncode(Parameter.Key), *FGenericPlatformHttp::UrlEncode(Parameter.Value)));
+	}
+	return FString::Join(KeyValues, TEXT("&"));
+}
+

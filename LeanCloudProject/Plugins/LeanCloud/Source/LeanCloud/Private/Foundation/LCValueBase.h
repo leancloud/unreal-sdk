@@ -173,6 +173,7 @@ struct FLCValueDate : FLCValueBase {
 	}
 	virtual FLCValue GetLconValue() override;
 	virtual FDateTime AsDate() override;
+	virtual FString AsString() override;
 	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	FDateTime Value;
@@ -197,6 +198,7 @@ struct FLCValueData : FLCValueBase {
 	}
 	virtual FLCValue GetLconValue() override;
 	virtual TArray<uint8> AsData() override;
+	virtual FString AsString() override;
 	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 protected:
 	TArray<uint8> Value;
