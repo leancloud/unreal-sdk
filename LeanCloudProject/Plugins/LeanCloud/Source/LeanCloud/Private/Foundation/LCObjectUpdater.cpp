@@ -1,18 +1,17 @@
 #include "LCObjectUpdater.h"
-#include "LeanCloud.h"
 #include "Network/LCHttpClient.h"
+#include "Network/LCAppRouter.h"
 #include "Tools/LCHelper.h"
 #include "Network/LCHttpResponse.h"
 
 
 void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects,
                             const FLeanCloudBoolResultDelegate& CallBack) {
-	Save(Objects, TLCMap(), CallBack);
+	Save(Objects, TLCMap(), PerformCallBackOnGameThread(CallBack));
 }
 
 void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const FLCSaveOption& Option,
                             const FLeanCloudBoolResultDelegate& CallBack) {
-
 }
 
 void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const TArray<FString>& Keys,
@@ -21,7 +20,15 @@ void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const
 
 void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
                               const FLeanCloudBoolResultDelegate& CallBack) {
+}
 
+FLeanCloudBoolResultDelegate FLCObjectUpdater::
+PerformCallBackOnGameThread(const FLeanCloudBoolResultDelegate& CallBack) {
+	return FLeanCloudBoolResultDelegate::CreateLambda([CallBack]( bool bIsSuccess, const FLCError& Error) {
+		FLCHelper::PerformOnGameThread([=]() {
+			CallBack.ExecuteIfBound(bIsSuccess, Error);
+		});
+	});
 }
 
 // 如果在数组或者Map里有新的Object（也就是没有Object ID的），需要单独上传一次，其余新的Object可以通过_InternalId对应上
@@ -69,7 +76,7 @@ void FLCObjectUpdater::Visit(TMap<TSharedPtr<FLCObject>, EObjectVisitState>& Vis
 		}
 		switch (VisitState) {
 		case EObjectVisitState::Unvisited:
-			VisitRecord[ObjectPtr] = EObjectVisitState::Visiting;
+			VisitRecord.Add(ObjectPtr, EObjectVisitState::Visiting);
 			for (auto Operation : ObjectPtr->Operations) {
 				Visit(VisitRecord, Operation.Value, Value, UnvisitedBlock);
 			}
@@ -105,20 +112,16 @@ void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const 
 			                      }));
 	}
 	catch (const FLCError& Error) {
-		FLCHelper::PerformOnGameThread([=] {
-			CallBack.ExecuteIfBound(false, Error);
-		});
+		CallBack.ExecuteIfBound(false, Error);
 	}
 	catch (...) {
-		FLCHelper::PerformOnGameThread([=] {
-			CallBack.ExecuteIfBound(false, FLCError(-1, "Unknow Error"));
-		});
+		CallBack.ExecuteIfBound(false, FLCError(-1, "Unknow Error"));
 	}
 }
 
 TSharedPtr<FLCApplication> FLCObjectUpdater::GetApplicationsPtr(const TArray<TSharedPtr<FLCObject>>& Objects) {
 	if (Objects.Num() == 0) {
-		FLCError::Throw(ELCErrorCode::ObjectNotFound);
+		return nullptr;
 	}
 	for (auto FlcObject : Objects) {
 		if (!FlcObject.IsValid()) {
@@ -144,15 +147,19 @@ TSharedPtr<FLCApplication> FLCObjectUpdater::GetApplicationsPtr(const TArray<TSh
 
 void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>& Objects, const TLCMap& InParas,
                                              const FLeanCloudBoolResultDelegate& CallBack) {
+	if (Objects.Num() == 0) {
+		CallBack.ExecuteIfBound(true, FLCError());
+		return;
+	}
 	TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(Objects);
 	FLCHttpRequest Request;
 	Request.HttpMethod = ELCHttpMethod::POST;
-	Request.SetUrl(ApplicationsPtr->GetServerUrl());
+	Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchRequestUrl());
 	TLCArray BatchRequests;
 	for (auto FlcObject : Objects) {
-		ELCHttpMethod HttpMethod = ELCHttpMethod::POST;
+		ELCHttpMethod HttpMethod = ELCHttpMethod::PUT;
 		if (FlcObject->GetObjectId().IsEmpty()) {
-			HttpMethod = ELCHttpMethod::PUT;
+			HttpMethod = ELCHttpMethod::POST;
 		}
 		BatchRequests.Add(GenerateBatchRequest(HttpMethod, InParas, FlcObject));
 	}
@@ -160,6 +167,14 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 	ApplicationsPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
 		                                     [=](const FLCHttpResponse& InResponse) {
 			                                     if (InResponse.bIsSuccess()) {
+				                                     TLCMap ResultMap = InResponse.Data.AsMap();
+				                                     for (auto FlcObject : Objects) {
+					                                     auto ValuePtr = ResultMap.Find(FlcObject->GetInternalId());
+					                                     if (ValuePtr && ValuePtr->IsMapType()) {
+					                                     	FlcObject->UpdateDataFromServer(ValuePtr->AsMap());
+					                                     	FlcObject->ClearOperations();
+					                                     }
+				                                     }
 				                                     CallBack.ExecuteIfBound(
 					                                     true, InResponse.Error);
 			                                     }
@@ -168,11 +183,10 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 					                                     false, InResponse.Error);
 			                                     }
 		                                     }));
-
 }
 
 FString FLCObjectUpdater::GetBatchRequestPath(const FString& Path) {
-	return FString("/") + LeanCloud_Unreal_Version / Path;
+	return FString("/") + "1.1" / Path;
 }
 
 TLCMap FLCObjectUpdater::GenerateBatchRequest(ELCHttpMethod InHttpMethod, const TLCMap& InParas,
@@ -183,19 +197,19 @@ TLCMap FLCObjectUpdater::GenerateBatchRequest(ELCHttpMethod InHttpMethod, const 
 	}
 	Result.Add("method", LexToString(InHttpMethod));
 	if (InHttpMethod == ELCHttpMethod::POST) {
+		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint()));
+	}
+	else {
 		if (Object->GetObjectId().IsEmpty()) {
 			FLCError::Throw("Object ID is empty");
 		}
 		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint() / Object->GetObjectId()));
 	}
-	else {
-		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint()));
-	}
 	if (InParas.Num() > 0) {
 		Result.Add("params", InParas);
 	}
 	if (InHttpMethod == ELCHttpMethod::POST || InHttpMethod == ELCHttpMethod::PUT) {
-		if (!Object->GetObjectId().IsEmpty()) {
+		if (Object->GetObjectId().IsEmpty()) {
 			Result.Add("new", true);
 		}
 		Result.Add("body", GenerateBatchRequestBody(Object));

@@ -13,6 +13,8 @@ DECLARE_DELEGATE_TwoParams(FLeanCloudLogDelegate, ELCLogLevel LogLevel, const FS
 
 class FLCUser;
 class FLCHttpClient;
+class FLCAppRouter;
+
 
 class LEANCLOUD_API FLCApplication {
 public:
@@ -36,6 +38,7 @@ public:
 
 	TSharedPtr<FLCUser> CurrentUser;
 	TSharedPtr<FLCHttpClient> HttpClient;
+	TSharedPtr<FLCAppRouter> AppRouter;
 
 	FLCApplication(const FLCApplicationSettings& InSettings);
 

@@ -14,9 +14,9 @@ public:
 	void SetApplicationPtr(TSharedPtr<FLCApplication> InPtr);
 	TSharedPtr<FLCApplication> GetApplicationPtr() const;
 	
-	FLCObject(const FString& InClassName, const TLCMap& InServerData);
+	// FLCObject(const FString& InClassName, const TLCMap& InServerData);
 	FLCObject(const FString& InClassName);
-	FLCObject(const TLCMap& InServerData);
+	// FLCObject(const TLCMap& InServerData);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
 	virtual ~FLCObject();
 
@@ -58,11 +58,6 @@ public:
 	bool ParseTime(const FString& InTimeString, FDateTime& OutTime) const;
 
 protected:
-	FLCObject();
-	void SetObjectId(const FString& InObjectId);
-	void SetClassName(const FString& InClassName);
-	void SetCreatedAt(FDateTime InTime);
-	void SetUpdatedAt(FDateTime InTime);
 
 private:
 	friend class FLCObjectUpdater;
@@ -70,4 +65,6 @@ private:
 	TLCMap ServerData;
 	TLCMap Operations;
 	FString _InternalId;
+	void ClearOperations();
+	void UpdateDataFromServer(const TLCMap& InServerData);
 };

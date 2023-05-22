@@ -44,6 +44,12 @@ bool FLCValueString::AsBoolean() {
 	return Result;
 }
 
+FDateTime FLCValueString::AsDate() {
+	FDateTime OutDateTime;
+	FDateTime::ParseIso8601(*Value, OutDateTime);
+	return OutDateTime;
+}
+
 bool FLCValueString::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
 	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::String) {
 		return false;

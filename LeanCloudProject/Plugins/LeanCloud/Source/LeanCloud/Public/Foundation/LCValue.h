@@ -80,9 +80,9 @@ private:
 	void SetStringValue(const FString& InValue);
 	void SetArrayValue(const TLCArray& InValue);
 
-	template <typename LCValueType>
-	void AddArrayValue(TLCArray& Current, const LCValueType& InValue) {
-		Current.Add(FLCValue(InValue));
+	// template <typename LCValueType>
+	void AddArrayValue(TLCArray& Current, const FLCValue& InValue) {
+		Current.Add(InValue);
 		SetArrayValue(Current);
 	}
 	

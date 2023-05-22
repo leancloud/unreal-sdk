@@ -2,6 +2,7 @@
 
 #include "LCObjectUpdater.h"
 #include "Tools/LCHelper.h"
+#include "Tools/LCJsonHelper.h"
 static FString KeyClassName = "className";
 static FString KeyCreatedAt = "createdAt";
 static FString KeyUpdateAt = "updatedAt";
@@ -22,18 +23,18 @@ TSharedPtr<FLCApplication> FLCObject::GetApplicationPtr() const {
 	}
 }
 
-FLCObject::FLCObject(const FString& InClassName, const TLCMap& InServerData) {
-	ServerData = TLCMap(InServerData);
-	ServerData.Add(KeyClassName, InClassName);
-}
+// FLCObject::FLCObject(const FString& InClassName, const TLCMap& InServerData) {
+// 	ServerData = TLCMap(InServerData);
+// 	ServerData.Add(KeyClassName, InClassName);
+// }
 
 FLCObject::FLCObject(const FString& InClassName) {
 	ServerData.Add(KeyClassName, InClassName);
 }
 
-FLCObject::FLCObject(const TLCMap& InServerData) {
-	ServerData = TLCMap(InServerData);
-}
+// FLCObject::FLCObject(const TLCMap& InServerData) {
+// 	ServerData = TLCMap(InServerData);
+// }
 
 FLCObject::FLCObject(const FString& InClassName, const FString& InObjectId) {
 	ServerData.Add(KeyClassName, InClassName);
@@ -112,7 +113,12 @@ void FLCObject::Remove(const FString& Key, const FLCValue& Value) {
 }
 
 FString FLCObject::ToString() {
-	return "";
+	if (DoesSharedInstanceExist()) {
+		return FLCJsonHelper::GetJsonString(this->AsShared());
+	}
+	else {
+		return FLCJsonHelper::GetJsonString(MakeShared<FLCObject>(*this));
+	}
 }
 
 TSharedPtr<FLCObject> FLCObject::Parse(const FString& ObjectString) {
@@ -231,21 +237,13 @@ bool FLCObject::ParseTime(const FString& InTimeString, FDateTime& OutTime) const
 	return true;
 }
 
-FLCObject::FLCObject() {
+void FLCObject::ClearOperations() {
+	Operations.Empty();
 }
 
-void FLCObject::SetObjectId(const FString& InObjectId) {
-	Set(KeyObjectID, InObjectId);
+void FLCObject::UpdateDataFromServer(const TLCMap& InServerData) {
+	for (auto SubData : InServerData) {
+		ServerData.Add(SubData.Key, SubData.Value);
+	}
 }
 
-void FLCObject::SetClassName(const FString& InClassName) {
-	Set(KeyClassName, InClassName);
-}
-
-void FLCObject::SetCreatedAt(FDateTime InTime) {
-	Set(KeyCreatedAt, InTime);
-}
-
-void FLCObject::SetUpdatedAt(FDateTime InTime) {
-	Set(KeyUpdateAt, InTime);
-}

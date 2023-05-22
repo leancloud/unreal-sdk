@@ -201,5 +201,5 @@ FLCValue FLCJsonHelper::GetJsonValue(const FString& JsonStr) {
 		return FLCValue();
 	}
 
-	return *CurrentState.Get();
+	return *CurrentState->ValuePtr.Get();
 }

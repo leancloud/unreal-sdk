@@ -1,5 +1,6 @@
 #include "LeanCloudModule.h"
 #include "ISettingsModule.h"
+#include "LCApplication.h"
 #include "LeanCloudSettings.h"
 
 #define LOCTEXT_NAMESPACE "FLeanCloudModule"
@@ -16,6 +17,9 @@ void FLeanCloudModule::StartupModule()
 			LOCTEXT("LeanCloudSettingsDescription", "Project settings for LeanCloud plugin"),
 			GetMutableDefault<ULeanCloudSettings>()
 		);
+		for (auto Application : GetDefault<ULeanCloudSettings>()->Applications) {
+			FLCApplication::Register(Application);
+		}
 	}
 }
 

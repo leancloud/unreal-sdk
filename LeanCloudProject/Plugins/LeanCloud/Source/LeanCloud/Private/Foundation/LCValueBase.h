@@ -68,6 +68,7 @@ struct FLCValueString : FLCValueBase {
 	virtual int64 AsInteger() override;
 	virtual double AsDouble() override;
 	virtual bool AsBoolean() override;
+	virtual FDateTime AsDate() override;
 
 	virtual bool operator==(const TSharedPtr<FLCValueBase>& Rhs) override;
 

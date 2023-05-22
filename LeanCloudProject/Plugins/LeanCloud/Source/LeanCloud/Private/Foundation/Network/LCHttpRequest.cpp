@@ -11,10 +11,15 @@ FString FLCHttpRequest::GetOriginUrl() const {
 }
 
 FString FLCHttpRequest::GetUrl() const {
-	if (Url.Contains(TEXT("?"))) {
-		return FString::Printf(TEXT("%s&%s"), *Url, *UrlEncodingParameters(UrlParameters));
+	FString UrlEncodingParametersStr = UrlEncodingParameters(UrlParameters);
+	if (UrlEncodingParametersStr.IsEmpty()) {
+		return Url;
 	} else {
-		return FString::Printf(TEXT("%s?%s"), *Url, *UrlEncodingParameters(UrlParameters));
+		if (Url.Contains(TEXT("?"))) {
+			return FString::Printf(TEXT("%s&%s"), *Url, *UrlEncodingParametersStr);
+		} else {
+			return FString::Printf(TEXT("%s?%s"), *Url, *UrlEncodingParametersStr);
+		}
 	}
 }
 

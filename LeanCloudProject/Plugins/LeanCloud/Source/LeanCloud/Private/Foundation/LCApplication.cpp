@@ -1,6 +1,8 @@
 #include "LCApplication.h"
 
 #include "Network/LCHttpClient.h"
+#include "Network/LCAppRouter.h"
+
 #include "Tools/LCDebuger.h"
 
 
@@ -33,6 +35,8 @@ TSharedPtr<FLCApplication> FLCApplication::Register(const FLCApplicationSettings
 	}
 	TSharedPtr<FLCApplication> Ptr = MakeShared<FLCApplication>(InSettings);
 	Ptr->HttpClient = MakeShared<FLCHttpClient>(Ptr);
+	Ptr->AppRouter = MakeShared<FLCAppRouter>(Ptr);
+
 	Registry.Add(InSettings.AppId, Ptr);
 	if (!Default.IsValid()) {
 		Default = Ptr;

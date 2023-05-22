@@ -18,6 +18,8 @@ private:
 		Visiting,
 		Visited
 	};
+	static FLeanCloudBoolResultDelegate PerformCallBackOnGameThread(const FLeanCloudBoolResultDelegate& CallBack);
+
 	static void Classify(const TArray<TSharedPtr<FLCObject>>& Objects, TArray<TSharedPtr<FLCObject>>& NewbornObjects, TArray<TSharedPtr<FLCObject>>& FamilyObjects);
 	static void Visit(TMap<TSharedPtr<FLCObject>, EObjectVisitState>& VisitRecord, const FLCValue& Value, const FLCValue& Parent, const TFunction<void(const TSharedPtr<FLCObject>& UnvisitedObject, const FLCValue& TopValue)>& UnvisitedBlock);
 	static void Save(const TArray<TSharedPtr<FLCObject>>& Objects, const TLCMap& InParas, const FLeanCloudBoolResultDelegate& CallBack);
