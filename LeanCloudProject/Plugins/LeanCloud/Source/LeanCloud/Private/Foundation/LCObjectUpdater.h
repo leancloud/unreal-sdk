@@ -28,4 +28,7 @@ private:
 	static FString GetBatchRequestPath(const FString& Path);
 	static TLCMap GenerateBatchRequest(ELCHttpMethod InHttpMethod, const TLCMap& InParas, const TSharedPtr<FLCObject>& Object);
 	static TLCMap GenerateBatchRequestBody(const TSharedPtr<FLCObject>& Object);
+	static TSharedPtr<FLCError> HandleObjectFetchedResult(const TLCMap& Result, const TArray<TSharedPtr<FLCObject>>& Objects);
+	static TSharedPtr<FLCError> HandleObjectFetchedResponse(const FLCHttpResponse& InResponse, const TArray<TSharedPtr<FLCObject>>& Objects);
+
 };

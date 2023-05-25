@@ -34,6 +34,7 @@ enum class ELCErrorCode {
 
 inline const TCHAR* LexToString(ELCErrorCode ErrorCode) {
 	switch (ErrorCode) {
+	case ELCErrorCode::ObjectNotFound: return TEXT("Object not found"); break;
 	case ELCErrorCode::CommandTimeout: return TEXT("Out command timeout"); break;
 	case ELCErrorCode::ConnectionLost: return TEXT("Connection lost"); break;
 	case ELCErrorCode::ClientNotOpen: return TEXT("IM client not open"); break;

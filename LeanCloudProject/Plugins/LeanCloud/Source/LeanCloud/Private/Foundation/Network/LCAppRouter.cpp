@@ -3,10 +3,10 @@
 
 FString FLCAppRouter::APIVersion = "1.1";
 
-FString FLCAppRouter::GetBatchRequestUrl() const {
+FString FLCAppRouter::GetBatchSaveUrl() const {
 	return ApplicationPtr.Pin()->GetServerUrl() / APIVersion / "batch/save";
 }
 
-FString FLCAppRouter::GetDeleteUrl() const {
+FString FLCAppRouter::GetBatchUrl() const {
 	return ApplicationPtr.Pin()->GetServerUrl() / APIVersion / "batch";
 }

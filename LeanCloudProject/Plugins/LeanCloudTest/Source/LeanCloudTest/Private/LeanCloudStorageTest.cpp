@@ -88,4 +88,31 @@ bool LeanCloudStorageRemoveTest::RunTest(const FString& Parameters) {
 	return true;
 }
 
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageFetchTest, "LeanCloud.Storage.4 Fetch",
+								 EAutomationTestFlags::ApplicationContextMask |
+									 EAutomationTestFlags::ProductFilter)
+bool LeanCloudStorageFetchTest::RunTest(const FString& Parameters) {
+	TSharedPtr<FLCObject> ObjectPtr = MakeShared<FLCObject>(FString("UETest"));
+	ObjectPtr->Set("name", TEXT("小红"));
+	ObjectPtr->Set("age", 18);
+	static bool HasCallBack = false;
+	ObjectPtr->Save(FLeanCloudBoolResultDelegate::CreateLambda([this, ObjectPtr](bool bIsSuccess, const FLCError& Error) {
+			TestTrue("Save Before Fetch", bIsSuccess);
+		TSharedPtr<FLCObject> NewObjectPtr = MakeShared<FLCObject>(FString("UETest"), ObjectPtr->GetObjectId());
+		TArray<FString> Keys = {"name"};
+		NewObjectPtr->Fetch(Keys, FLeanCloudBoolResultDelegate::CreateLambda(
+			                    [this, NewObjectPtr](bool bIsSuccess, const FLCError& Error) {
+				                    TestTrue("Fetch", bIsSuccess);
+			                    	NewObjectPtr->Get("name");
+			                    	TestEqual("Fetch Name", NewObjectPtr->Get("name").AsString(), "小红");
+			                    	TestTrue("Fetch age is null", NewObjectPtr->Get("age").IsNoneType());
+				                    HasCallBack = true;
+			                    }));
+		}));
+	
+	AddCommand(new FWaitRequest(HasCallBack));
+	return true;
+}
+
 #endif

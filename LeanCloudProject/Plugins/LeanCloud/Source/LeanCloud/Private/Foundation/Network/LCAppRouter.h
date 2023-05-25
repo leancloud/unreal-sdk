@@ -5,8 +5,8 @@ class FLCAppRouter {
 public:
 	static FString APIVersion;
 	FLCAppRouter(const TSharedPtr<FLCApplication>& Ptr): ApplicationPtr(Ptr) {};
-	FString GetBatchRequestUrl() const;
-	FString GetDeleteUrl() const;
+	FString GetBatchSaveUrl() const;
+	FString GetBatchUrl() const;
 private:
 	TWeakPtr<FLCApplication> ApplicationPtr;
 };

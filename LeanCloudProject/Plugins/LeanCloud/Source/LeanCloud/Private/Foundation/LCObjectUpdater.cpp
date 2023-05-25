@@ -16,6 +16,43 @@ void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const 
 
 void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const TArray<FString>& Keys,
                              const FLeanCloudBoolResultDelegate& CallBack) {
+	auto GameThreadCallBack = PerformCallBackOnGameThread(CallBack);
+	try {
+		if (Objects.Num() == 0) {
+			GameThreadCallBack.ExecuteIfBound(true, FLCError());
+		}
+		TArray<TSharedPtr<FLCObject>> FamilyObjects = TSet<TSharedPtr<FLCObject>>(Objects).Array();
+		TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(FamilyObjects);
+		FLCHttpRequest Request;
+		Request.HttpMethod = ELCHttpMethod::POST;
+		Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchUrl());
+		TLCArray BatchRequests;
+		TLCMap KeysParameters;
+		if (Keys.Num() > 0) {
+			KeysParameters.Add("keys", FString::Join(Keys, TEXT(",")));
+		}
+		for (auto FlcObject : Objects) {
+			BatchRequests.Add(GenerateBatchRequest(ELCHttpMethod::GET, KeysParameters, FlcObject));
+		}
+		Request.BodyParameters.Add("requests", BatchRequests);
+		ApplicationsPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
+			                                     [=](const FLCHttpResponse& InResponse) {
+				                                     auto ErrorPtr = HandleObjectFetchedResponse(
+					                                     InResponse, FamilyObjects);
+				                                     if (ErrorPtr.IsValid()) {
+					                                     GameThreadCallBack.ExecuteIfBound(false, *ErrorPtr.Get());
+				                                     }
+				                                     else {
+					                                     GameThreadCallBack.ExecuteIfBound(true, FLCError());
+				                                     }
+			                                     }));
+	}
+	catch (const FLCError& Error) {
+		GameThreadCallBack.ExecuteIfBound(false, Error);
+	}
+	catch (...) {
+		GameThreadCallBack.ExecuteIfBound(false, FLCError(-1, "Unknow Error"));
+	}
 }
 
 void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
@@ -29,24 +66,28 @@ void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
 		TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(FamilyObjects);
 		FLCHttpRequest Request;
 		Request.HttpMethod = ELCHttpMethod::POST;
-		Request.SetUrl(ApplicationsPtr->AppRouter->GetDeleteUrl());
+		Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchUrl());
 		TLCArray BatchRequests;
 		for (auto FlcObject : Objects) {
 			BatchRequests.Add(GenerateBatchRequest(ELCHttpMethod::DELETE, TLCMap(), FlcObject));
 		}
 		Request.BodyParameters.Add("requests", BatchRequests);
 		ApplicationsPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
-												 [=](const FLCHttpResponse& InResponse) {
-												 	auto ArrData = InResponse.Data.AsArray();
-												    if (ArrData.Num() == 1) {
-													    auto MapData = ArrData[0].AsMap();
-												    	if (auto ErrorPtr = MapData.Find("error")) {
-												    		GameThreadCallBack.ExecuteIfBound(false, FLCError(ErrorPtr->AsMap().FindRef("code").AsInteger(), ErrorPtr->AsMap().FindRef("error").AsString()));
-												    		return;
-												    	}
-												    }
-												 	GameThreadCallBack.ExecuteIfBound(InResponse.bIsSuccess(), InResponse.Error);
-												 }));
+			                                     [=](const FLCHttpResponse& InResponse) {
+				                                     auto ArrData = InResponse.Data.AsArray();
+				                                     if (ArrData.Num() == 1) {
+					                                     auto MapData = ArrData[0].AsMap();
+					                                     if (auto ErrorPtr = MapData.Find("error")) {
+						                                     GameThreadCallBack.ExecuteIfBound(
+							                                     false, FLCError(
+								                                     ErrorPtr->AsMap().FindRef("code").AsInteger(),
+								                                     ErrorPtr->AsMap().FindRef("error").AsString()));
+						                                     return;
+					                                     }
+				                                     }
+				                                     GameThreadCallBack.ExecuteIfBound(
+					                                     InResponse.bIsSuccess(), InResponse.Error);
+			                                     }));
 	}
 	catch (const FLCError& Error) {
 		GameThreadCallBack.ExecuteIfBound(false, Error);
@@ -58,7 +99,7 @@ void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
 
 FLeanCloudBoolResultDelegate FLCObjectUpdater::
 PerformCallBackOnGameThread(const FLeanCloudBoolResultDelegate& CallBack) {
-	return FLeanCloudBoolResultDelegate::CreateLambda([CallBack]( bool bIsSuccess, const FLCError& Error) {
+	return FLeanCloudBoolResultDelegate::CreateLambda([CallBack](bool bIsSuccess, const FLCError& Error) {
 		FLCHelper::PerformOnGameThread([=]() {
 			CallBack.ExecuteIfBound(bIsSuccess, Error);
 		});
@@ -191,7 +232,7 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 	TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(Objects);
 	FLCHttpRequest Request;
 	Request.HttpMethod = ELCHttpMethod::POST;
-	Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchRequestUrl());
+	Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchSaveUrl());
 	TLCArray BatchRequests;
 	for (auto FlcObject : Objects) {
 		ELCHttpMethod HttpMethod = ELCHttpMethod::PUT;
@@ -208,8 +249,8 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 				                                     for (auto FlcObject : Objects) {
 					                                     auto ValuePtr = ResultMap.Find(FlcObject->GetInternalId());
 					                                     if (ValuePtr && ValuePtr->IsMapType()) {
-					                                     	FlcObject->UpdateDataFromServer(ValuePtr->AsMap());
-					                                     	FlcObject->ClearOperations();
+						                                     FlcObject->UpdateDataFromServer(ValuePtr->AsMap());
+						                                     FlcObject->ClearOperations();
 					                                     }
 				                                     }
 				                                     CallBack.ExecuteIfBound(
@@ -280,4 +321,46 @@ TLCMap FLCObjectUpdater::GenerateBatchRequestBody(const TSharedPtr<FLCObject>& O
 		Body.Add("__children", Children);
 	}
 	return MoveTemp(Body);
+}
+
+TSharedPtr<FLCError> FLCObjectUpdater::HandleObjectFetchedResult(const TLCMap& Result,
+                                                                 const TArray<TSharedPtr<FLCObject>>& Objects) {
+	auto SuccessMapPtr = Result.Find("success");
+	if (SuccessMapPtr == nullptr) {
+		return MakeShared<FLCError>(ELCErrorCode::ObjectNotFound);
+	}
+	auto ObjectMap = SuccessMapPtr->AsMap();
+	auto ObjectIDPtr = ObjectMap.Find("objectId");
+	if (ObjectIDPtr == nullptr) {
+		return MakeShared<FLCError>(ELCErrorCode::ObjectNotFound);
+	}
+	FString ObjectID = ObjectIDPtr->AsString();
+	if (ObjectID.IsEmpty()) {
+		return MakeShared<FLCError>(ELCErrorCode::ObjectNotFound);
+	}
+	for (auto FlcObject : Objects) {
+		if (ObjectID == FlcObject->GetObjectId()) {
+			FlcObject->UpdateDataFromServer(ObjectMap);
+			FlcObject->ClearOperations();
+		}
+	}
+	return nullptr;
+}
+
+TSharedPtr<FLCError> FLCObjectUpdater::HandleObjectFetchedResponse(const FLCHttpResponse& InResponse,
+                                                                   const TArray<TSharedPtr<FLCObject>>& Objects) {
+	if (!InResponse.bIsSuccess()) {
+		return MakeShared<FLCError>(InResponse.Error);
+	}
+	if (!InResponse.Data.IsArrayType()) {
+		return MakeShared<FLCError>(FLCError((int)ELCErrorCode::MalformedData, "alformed response data."));
+	}
+	TSharedPtr<FLCError> ErrorPtr = nullptr;
+	for (auto AsArray : InResponse.Data.AsArray()) {
+		auto ResultPtr = HandleObjectFetchedResult(AsArray.AsMap(), Objects);
+		if (ResultPtr.IsValid()) {
+			ErrorPtr = ResultPtr;
+		}
+	}
+	return ErrorPtr;
 }

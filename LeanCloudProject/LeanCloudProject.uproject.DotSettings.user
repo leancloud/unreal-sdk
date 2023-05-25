@@ -2,5 +2,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d39d39e4_002Dc7b1_002D42aa_002Da2d6_002D4ef0d21616c1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="3 Remove" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.3 Remove&lt;/TestId&gt;
+    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.3 Fetch&lt;/TestId&gt;
+    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.4 Fetch&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
