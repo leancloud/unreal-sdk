@@ -20,6 +20,40 @@ void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const
 
 void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
                               const FLeanCloudBoolResultDelegate& CallBack) {
+	auto GameThreadCallBack = PerformCallBackOnGameThread(CallBack);
+	try {
+		if (Objects.Num() == 0) {
+			GameThreadCallBack.ExecuteIfBound(true, FLCError());
+		}
+		TArray<TSharedPtr<FLCObject>> FamilyObjects = TSet<TSharedPtr<FLCObject>>(Objects).Array();
+		TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(FamilyObjects);
+		FLCHttpRequest Request;
+		Request.HttpMethod = ELCHttpMethod::POST;
+		Request.SetUrl(ApplicationsPtr->AppRouter->GetDeleteUrl());
+		TLCArray BatchRequests;
+		for (auto FlcObject : Objects) {
+			BatchRequests.Add(GenerateBatchRequest(ELCHttpMethod::DELETE, TLCMap(), FlcObject));
+		}
+		Request.BodyParameters.Add("requests", BatchRequests);
+		ApplicationsPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
+												 [=](const FLCHttpResponse& InResponse) {
+												 	auto ArrData = InResponse.Data.AsArray();
+												    if (ArrData.Num() == 1) {
+													    auto MapData = ArrData[0].AsMap();
+												    	if (auto ErrorPtr = MapData.Find("error")) {
+												    		GameThreadCallBack.ExecuteIfBound(false, FLCError(ErrorPtr->AsMap().FindRef("code").AsInteger(), ErrorPtr->AsMap().FindRef("error").AsString()));
+												    		return;
+												    	}
+												    }
+												 	GameThreadCallBack.ExecuteIfBound(InResponse.bIsSuccess(), InResponse.Error);
+												 }));
+	}
+	catch (const FLCError& Error) {
+		GameThreadCallBack.ExecuteIfBound(false, Error);
+	}
+	catch (...) {
+		GameThreadCallBack.ExecuteIfBound(false, FLCError(-1, "Unknow Error"));
+	}
 }
 
 FLeanCloudBoolResultDelegate FLCObjectUpdater::
@@ -48,7 +82,7 @@ void FLCObjectUpdater::Classify(const TArray<TSharedPtr<FLCObject>>& Objects,
 		      });
 	}
 	NewbornObjects = NewbornSet.Array();
-	FamilyObjects = FamilySet.Array();
+	FamilyObjects = FamilySet.Difference(NewbornSet).Array();
 }
 
 void FLCObjectUpdater::Visit(TMap<TSharedPtr<FLCObject>, EObjectVisitState>& VisitRecord, const FLCValue& Value,
@@ -89,6 +123,9 @@ void FLCObjectUpdater::Visit(TMap<TSharedPtr<FLCObject>, EObjectVisitState>& Vis
 			FLCError::Throw(ELCErrorCode::CircularReference);
 			break;
 		case EObjectVisitState::Visited:
+			if (UnvisitedBlock) {
+				UnvisitedBlock(ObjectPtr, Parent);
+			}
 			break;
 		default: ;
 		}
@@ -186,7 +223,7 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 }
 
 FString FLCObjectUpdater::GetBatchRequestPath(const FString& Path) {
-	return FString("/") + "1.1" / Path;
+	return "/" + FLCAppRouter::APIVersion / Path;
 }
 
 TLCMap FLCObjectUpdater::GenerateBatchRequest(ELCHttpMethod InHttpMethod, const TLCMap& InParas,

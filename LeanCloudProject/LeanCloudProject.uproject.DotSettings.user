@@ -1,6 +1,6 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=dd7ced59_002Db12b_002D439a_002Da7ef_002Dc9d700b9d760/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="1 Object simple save" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d39d39e4_002Dc7b1_002D42aa_002Da2d6_002D4ef0d21616c1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="3 Remove" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
-    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.1 Object simple save&lt;/TestId&gt;
+    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.3 Remove&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

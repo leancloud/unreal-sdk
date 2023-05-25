@@ -9,6 +9,19 @@ class FLCObject;
 typedef TMap<FString, FLCValue> TLCMap;
 typedef TArray<FLCValue> TLCArray;
 
+template<typename T> struct TIsLCValueType           { enum { Value = false }; };
+template<>           struct TIsLCValueType<FString> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<int> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<double> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<bool> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<TLCArray> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<TLCMap> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<FDateTime> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<FLCGeoPoint> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<TSharedPtr<FLCObject>> { enum { Value = true  }; };
+template<>           struct TIsLCValueType<TArray<uint8>> { enum { Value = true  }; };
+
+
 struct LEANCLOUD_API FLCValue {
 
 	FLCValue();
@@ -80,8 +93,9 @@ private:
 	void SetStringValue(const FString& InValue);
 	void SetArrayValue(const TLCArray& InValue);
 
-	// template <typename LCValueType>
-	void AddArrayValue(TLCArray& Current, const FLCValue& InValue) {
+	template <typename LCValueType,
+		  typename = typename TEnableIf<TIsLCValueType<LCValueType>::Value>::Type>
+	void AddArrayValue(TLCArray& Current, const LCValueType& InValue) {
 		Current.Add(InValue);
 		SetArrayValue(Current);
 	}
@@ -91,7 +105,6 @@ private:
 		Current.Add(FLCValue(InValue));
 		AddArrayValue(Current, OtherValues...);
 	}
-	
 	
 	TSharedPtr<FLCValueBase> ValuePtr;
 };
