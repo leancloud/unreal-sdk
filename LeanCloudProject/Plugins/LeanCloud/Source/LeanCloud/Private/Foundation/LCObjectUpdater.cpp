@@ -12,6 +12,15 @@ void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects,
 
 void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const FLCSaveOption& Option,
                             const FLeanCloudBoolResultDelegate& CallBack) {
+	TLCMap Para;
+	if (Option.GetFetchWhenSave()) {
+		Para.Add("fetchWhenSave", true);
+	}
+	auto Where = Option.GetMatchQuery().GetLconWhere();
+	if (Where.Num() > 0) {
+		Para.Add("where", Where);
+	}
+	Save(Objects, Para, PerformCallBackOnGameThread(CallBack));
 }
 
 void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const TArray<FString>& Keys,
@@ -275,13 +284,13 @@ TLCMap FLCObjectUpdater::GenerateBatchRequest(ELCHttpMethod InHttpMethod, const 
 	}
 	Result.Add("method", LexToString(InHttpMethod));
 	if (InHttpMethod == ELCHttpMethod::POST) {
-		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint()));
+		Result.Add("path", GetBatchRequestPath(FLCHttpClient::GetEndpoint(Object->GetClassName())));
 	}
 	else {
 		if (Object->GetObjectId().IsEmpty()) {
 			FLCError::Throw("Object ID is empty");
 		}
-		Result.Add("path", GetBatchRequestPath(Object->GetEndpoint() / Object->GetObjectId()));
+		Result.Add("path", GetBatchRequestPath(FLCHttpClient::GetEndpoint(Object->GetClassName()) / Object->GetObjectId()));
 	}
 	if (InParas.Num() > 0) {
 		Result.Add("params", InParas);

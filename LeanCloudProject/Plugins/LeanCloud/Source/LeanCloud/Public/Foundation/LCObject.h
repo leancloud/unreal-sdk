@@ -3,7 +3,6 @@
 #include "LCError.h"
 #include "LCSaveOption.h"
 #include "LCValue.h"
-#include "Dom/JsonObject.h"
 
 DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const FLCError& Error);
 
@@ -19,9 +18,7 @@ public:
 	// FLCObject(const TLCMap& InServerData);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
 	virtual ~FLCObject();
-
-	virtual FString GetEndpoint();
-
+	
 	void Set(const FString& Key, const FLCValue& Value);
 	void Unset(const FString& Key);
 	FLCValue Get(const FString& Key) const;
@@ -61,6 +58,7 @@ protected:
 
 private:
 	friend class FLCObjectUpdater;
+	friend class FLCQuery;
 	TWeakPtr<FLCApplication> ApplicationPtr;
 	TLCMap ServerData;
 	TLCMap Operations;

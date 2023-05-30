@@ -4,5 +4,4 @@
 class LEANCLOUD_API FLCRole : public FLCObject {
 public:
 	virtual ~FLCRole() override;
-	virtual FString GetEndpoint() override;
 };

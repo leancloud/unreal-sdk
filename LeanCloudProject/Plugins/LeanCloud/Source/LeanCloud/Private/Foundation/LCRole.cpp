@@ -2,7 +2,3 @@
 
 FLCRole::~FLCRole() {
 }
-
-FString FLCRole::GetEndpoint() {
-	return "roles";
-}

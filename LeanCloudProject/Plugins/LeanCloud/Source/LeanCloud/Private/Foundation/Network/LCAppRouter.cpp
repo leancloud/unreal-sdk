@@ -10,3 +10,7 @@ FString FLCAppRouter::GetBatchSaveUrl() const {
 FString FLCAppRouter::GetBatchUrl() const {
 	return ApplicationPtr.Pin()->GetServerUrl() / APIVersion / "batch";
 }
+
+FString FLCAppRouter::GetRouteUrl(const FString& Path) const {
+	return ApplicationPtr.Pin()->GetServerUrl() / Path;
+}

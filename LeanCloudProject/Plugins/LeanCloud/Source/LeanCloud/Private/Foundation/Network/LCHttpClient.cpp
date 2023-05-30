@@ -80,6 +80,18 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 	}
 }
 
+FString FLCHttpClient::GetEndpoint(const FString& ClassName) {
+	if (ClassName == "_User") {
+		return "users";
+	} else if (ClassName == "_Role") {
+		return "roles";
+	} else if (ClassName == "_Installation") {
+		return "installations";
+	} else {
+		return FString::Printf(TEXT("classes/%s"), *ClassName);
+	}
+}
+
 FString FLCHttpClient::CreateRequestSignature() {
 	const int64 Ticks = FDateTime::UtcNow().ToUnixTimestamp() * 1000;
 	const FString TimeStr = FString::Printf(TEXT("%010lld"), Ticks);

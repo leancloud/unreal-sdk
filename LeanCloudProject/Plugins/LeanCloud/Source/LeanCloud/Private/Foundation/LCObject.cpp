@@ -44,10 +44,6 @@ FLCObject::FLCObject(const FString& InClassName, const FString& InObjectId) {
 FLCObject::~FLCObject() {
 }
 
-FString FLCObject::GetEndpoint() {
-	return "classes/" + GetClassName();
-}
-
 void FLCObject::Set(const FString& Key, const FLCValue& Value) {
 	if (Value.IsNoneType()) {
 		Unset(Key);

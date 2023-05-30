@@ -1,33 +1,43 @@
 #pragma once
+#include "LCApplication.h"
 #include "LCGeoPoint.h"
 #include "LCError.h"
 #include "LCValue.h"
 
 class FLCObject;
 DECLARE_DELEGATE_TwoParams(FLeanCloudQueryObjectDelegate, TSharedPtr<FLCObject> ObjectPtr, const FLCError& Error);
-DECLARE_DELEGATE_TwoParams(FLeanCloudQueryObjectsDelegate, TSharedPtr<TArray<FLCObject>> ObjectsPtr,
+DECLARE_DELEGATE_TwoParams(FLeanCloudQueryObjectsDelegate, TArray<TSharedPtr<FLCObject>> ObjectPtrs,
                            const FLCError& Error);
-DECLARE_DELEGATE_TwoParams(FLeanCloudQueryCountDelegate, TSharedPtr<uint64> CountPtr, const FLCError& Error);
+DECLARE_DELEGATE_TwoParams(FLeanCloudQueryCountDelegate, int Count, const FLCError& Error);
 
 
 class LEANCLOUD_API FLCQuery {
 public:
 	FLCQuery(const FString& InClassName);
+	FLCQuery(const FString& InClassName, TSharedPtr<FLCApplication> InApplicationPtr);
 
-	void Get(const FString& ObjectId, FLeanCloudQueryObjectDelegate CallBack);
-	void GetFirst(FLeanCloudQueryObjectDelegate CallBack);
-	void Find(FLeanCloudQueryObjectsDelegate CallBack);
-	void Count(FLeanCloudQueryCountDelegate CallBack);
+	void Get(const FString& ObjectId, const FLeanCloudQueryObjectDelegate& CallBack) const;
+	void GetFirst(const FLeanCloudQueryObjectDelegate& CallBack) const;
+	void Find(const FLeanCloudQueryObjectsDelegate& CallBack) const;
+	void Count(const FLeanCloudQueryCountDelegate& CallBack) const;
+
+	TLCMap GetLconWhere() const;
+	FLCValue GetLconValue() const;
 
 	int64 Limit = 0;
 	int64 Skip = 0;
 	bool IncludeACL = false;
 	FString WhereString;
 
+	TSharedPtr<FLCApplication> GetApplicationPtr() const;
+	FString GetClassName() const;
+
 	void SetSelectKeys(const TArray<FString>& Keys);
-	
-	FLCQuery And(const TArray<FLCQuery>& Querys);
-	FLCQuery Or(const TArray<FLCQuery>& Querys);
+
+	FLCQuery And(const FLCQuery& Query);
+	FLCQuery Or(const FLCQuery& Query);
+	static FLCQuery And(const TArray<FLCQuery>& Querys);
+	static FLCQuery Or(const TArray<FLCQuery>& Querys);
 	
 	/* Key */
 	FLCQuery& WhereKeyIncluded(const FString& Key);
@@ -65,13 +75,13 @@ public:
 	FLCQuery& WhereDoesNotMatchQuery(const FString& Key, const FLCQuery& Query);
 
 	/* String */
-	FLCQuery& WhereMatchedRegularExpression(const FString& Key, const FString& RegularExpression);
+	FLCQuery& WhereMatchedRegularExpression(const FString& Key, const FString& Expression, const FString& Option = "");
 	FLCQuery& WhereMatchedSubstring(const FString& Key, const FString& Substring);
 	FLCQuery& WherePrefixedBy(const FString& Key, const FString& Prefix);
 	FLCQuery& WhereSuffixedBy(const FString& Key, const FString& Suffix);
 
 	/* Relation */
-	FLCQuery& WhereRelatedTo(const FString& Key, const FLCObject& Object);
+	FLCQuery& WhereRelatedTo(const FString& Key, const TSharedPtr<FLCObject>& Object);
 
 	/* Order */
 	FLCQuery& WhereOrderByAscending(const FString& Key);
@@ -79,4 +89,18 @@ public:
 	
 private:
 	FString ObjectClassName;
+	TWeakPtr<FLCApplication> ApplicationPtr;
+	TSet<FString> IncludedKeys;
+	TSet<FString> SelectedKeys;
+	TArray<FString> OrderedKeys;
+	TLCMap ConstraintDictionary;
+	TLCMap ExtraParameters;
+	
+	void Find(const TLCMap& Parameters, const FLeanCloudQueryObjectsDelegate& CallBack) const;
+	TArray<TSharedPtr<FLCObject>> ProcessResults(const TLCArray& Results, const FString& InClassName = "") const;
+	TLCMap GetParameters() const;
+	FString LconWhereString() const;
+	TLCMap LconValueWithoutWhere() const;
+	void AddArrayConstraint(const FString& OpKey, const FLCValue& Value);
+	static FLCQuery Combine(const FString& OpKey, const TArray<FLCQuery>& Querys);
 };

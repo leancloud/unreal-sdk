@@ -4,5 +4,4 @@
 class LEANCLOUD_API FLCInstallation : public FLCObject {
 public:
 	virtual ~FLCInstallation() override;
-	virtual FString GetEndpoint() override;
 };

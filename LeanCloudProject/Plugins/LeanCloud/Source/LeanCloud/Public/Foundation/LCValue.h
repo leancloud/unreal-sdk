@@ -20,7 +20,7 @@ template<>           struct TIsLCValueType<FDateTime> { enum { Value = true  }; 
 template<>           struct TIsLCValueType<FLCGeoPoint> { enum { Value = true  }; };
 template<>           struct TIsLCValueType<TSharedPtr<FLCObject>> { enum { Value = true  }; };
 template<>           struct TIsLCValueType<TArray<uint8>> { enum { Value = true  }; };
-
+template<>           struct TIsLCValueType<FLCValue> { enum { Value = true  }; };
 
 struct LEANCLOUD_API FLCValue {
 
@@ -55,10 +55,27 @@ struct LEANCLOUD_API FLCValue {
 	FLCValue& operator=(const FLCValue&) = default;
 
 	bool operator==(const FLCValue& Rhs);
-	
 	bool operator!=(const FLCValue& Rhs);
+	FORCEINLINE FLCValue operator[](const FString& Key) const
+	{
+		auto ResultPtr = AsMap().Find(Key);
+		if (ResultPtr) {
+			return *ResultPtr;
+		} else {
+			return FLCValue();
+		}
+	}
 
-	FLCValue GetLconValue();
+	FORCEINLINE FLCValue operator[](int Index) const
+	{
+		auto Array = AsArray();
+		if (Index < 0 || Index >= Array.Num()) {
+			return FLCValue();
+		}
+		return Array[Index];
+	}
+
+	FLCValue GetLconValue() const;
 
 	void Reset();
 

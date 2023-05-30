@@ -105,7 +105,7 @@ bool LeanCloudStorageFetchTest::RunTest(const FString& Parameters) {
 			                    [this, NewObjectPtr](bool bIsSuccess, const FLCError& Error) {
 				                    TestTrue("Fetch", bIsSuccess);
 			                    	NewObjectPtr->Get("name");
-			                    	TestEqual("Fetch Name", NewObjectPtr->Get("name").AsString(), "小红");
+			                    	TestEqual("Fetch Name", NewObjectPtr->Get("name").AsString(), TEXT("小红"));
 			                    	TestTrue("Fetch age is null", NewObjectPtr->Get("age").IsNoneType());
 				                    HasCallBack = true;
 			                    }));

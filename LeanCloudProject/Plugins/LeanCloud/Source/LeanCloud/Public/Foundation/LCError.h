@@ -3,6 +3,7 @@
 
 // @see https://leancloud.cn/docs/error_code.html
 enum class ELCErrorCode {
+	OK = 0,
 	// ServerErrorCode
 	ObjectNotFound = 101,
 	SessionConflict = 4111,

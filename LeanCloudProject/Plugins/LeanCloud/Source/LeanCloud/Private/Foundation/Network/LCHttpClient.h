@@ -31,7 +31,7 @@ public:
 	FLCHttpClient(const TSharedPtr<FLCApplication>& Ptr): ApplicationPtr(Ptr) {};
 	void Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FDelegate CallBack);
 
-	
+	static FString GetEndpoint(const FString& ClassName);
 private:
 	TWeakPtr<FLCApplication> ApplicationPtr;
 

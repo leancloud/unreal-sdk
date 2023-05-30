@@ -60,7 +60,7 @@ bool FLCValue::operator!=(const FLCValue& Rhs)
 	return !(*this == Rhs);
 }
 
-FLCValue FLCValue::GetLconValue()
+FLCValue FLCValue::GetLconValue() const
 {
 	return ValuePtr->GetLconValue();
 }
