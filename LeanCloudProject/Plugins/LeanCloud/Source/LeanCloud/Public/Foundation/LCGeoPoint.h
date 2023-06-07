@@ -10,6 +10,11 @@ struct LEANCLOUD_API FLCGeoPoint {
 		return Latitude == Rhs.Latitude && Longitude == Rhs.Longitude;
 	};
 
+	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FLCGeoPoint& GeoPoint)
+	{
+		return Ar << GeoPoint.Latitude << GeoPoint.Longitude;
+	}
+
 	double DistanceInKilometersTo(const FLCGeoPoint& GeoPoint);
 	double DistanceInMilesTo(const FLCGeoPoint& GeoPoint);
 	double DistanceInRadiansTo(const FLCGeoPoint& GeoPoint);

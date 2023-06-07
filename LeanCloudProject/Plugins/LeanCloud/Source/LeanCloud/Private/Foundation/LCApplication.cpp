@@ -1,13 +1,16 @@
 #include "LCApplication.h"
 
+#include "LCUser.h"
+#include "Misc/FileHelper.h"
 #include "Network/LCHttpClient.h"
 #include "Network/LCAppRouter.h"
 
 #include "Tools/LCDebuger.h"
 
+static FString CurrentUserFileName = "CurrentUser";
 
 TMap<FString, TSharedPtr<FLCApplication>> FLCApplication::Registry;
-TSharedPtr<FLCApplication> FLCApplication::Default;
+TSharedPtr<FLCApplication> FLCApplication::DefaultPtr;
 
 void FLCApplication::SetLogDelegate(FLeanCloudLogDelegate LogDelegate) {
 	FLCDebuger::LogDelegate = LogDelegate;
@@ -37,9 +40,17 @@ TSharedPtr<FLCApplication> FLCApplication::Register(const FLCApplicationSettings
 	Ptr->HttpClient = MakeShared<FLCHttpClient>(Ptr);
 	Ptr->AppRouter = MakeShared<FLCAppRouter>(Ptr);
 
+	TArray<uint8> Data;
+	if (Ptr->AppRouter->LoadFile(CurrentUserFileName, Data) && Data.Num() > 0) {
+		TSharedPtr<FLCUser> UserPtr = MakeShared<FLCUser>();
+		FMemoryReader Reader(Data);
+		Reader << *UserPtr.Get();
+		Ptr->CurrentUser = UserPtr;
+	}
+
 	Registry.Add(InSettings.AppId, Ptr);
-	if (!Default.IsValid()) {
-		Default = Ptr;
+	if (!DefaultPtr.IsValid()) {
+		DefaultPtr = Ptr;
 	}
 	return Ptr;
 }
@@ -62,4 +73,19 @@ FLCApplication::FLCApplication() {
 
 FLCApplication::FLCApplication(const FLCApplicationSettings& InSettings): Settings(InSettings) {
 	
+}
+
+
+TSharedPtr<FLCUser> FLCApplication::GetCurrentUser() {
+	return CurrentUser;
+}
+
+void FLCApplication::SetCurrentUser(const TSharedPtr<FLCUser>& InUser) {
+	CurrentUser = InUser;
+	TArray<uint8> Data;
+	if (InUser.IsValid()) {
+		FMemoryWriter Writer(Data);
+		Writer << *InUser.Get();
+	}
+	AppRouter->SaveFile(CurrentUserFileName, Data);
 }

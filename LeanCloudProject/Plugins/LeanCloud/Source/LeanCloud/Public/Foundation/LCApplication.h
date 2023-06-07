@@ -34,18 +34,22 @@ public:
 	void Unregister();
 	static TSharedPtr<FLCApplication> Get(const FString& InAppId);
 	
-	static TSharedPtr<FLCApplication> Default;
+	FLCApplication(const FLCApplicationSettings& InSettings);
 
-	TSharedPtr<FLCUser> CurrentUser;
+	TSharedPtr<FLCUser> GetCurrentUser();
+	void SetCurrentUser(const TSharedPtr<FLCUser>& InUser);
+	
+	static TSharedPtr<FLCApplication> DefaultPtr;
 	TSharedPtr<FLCHttpClient> HttpClient;
 	TSharedPtr<FLCAppRouter> AppRouter;
 
-	FLCApplication(const FLCApplicationSettings& InSettings);
 
 private:
 	FLCApplication();
 	
 	FLCApplicationSettings Settings;
 	static TMap<FString, TSharedPtr<FLCApplication>> Registry;
+	TSharedPtr<FLCUser> CurrentUser;
+
 };
 

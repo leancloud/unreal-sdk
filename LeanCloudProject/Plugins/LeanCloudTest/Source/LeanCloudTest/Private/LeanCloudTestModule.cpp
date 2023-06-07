@@ -1,12 +1,19 @@
 #include "LeanCloudTestModule.h"
 
 #include "LCApplication.h"
+#include "LCObject.h"
+#include "LCQuery.h"
 
 #define LOCTEXT_NAMESPACE "FLeanCloudTestModule"
 
 void FLeanCloudTestModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+	
+	// FLCQuery Query = FLCQuery("UETest");
+	// Query.Find(FLeanCloudQueryObjectsDelegate::CreateLambda([=](TArray<TSharedPtr<FLCObject>> ObjectPtrs,
+	// 															const FLCError& _Error) {
+	// 	FLCObject::Delete(ObjectPtrs, nullptr);
+	// }));
 	FLCApplication::SetLogDelegate(FLeanCloudLogDelegate::CreateLambda([](ELCLogLevel LogLevel, const FString& LogMsg) {
 	switch (LogLevel) {
 	case ELCLogLevel::Error: 

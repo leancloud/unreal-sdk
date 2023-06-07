@@ -1,12 +1,15 @@
 #include "LCJsonHelper.h"
 
+#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonWriter.h"
 
 // 如果ObjectType，出现相互指向，会产生死循环。这里只是输出JSON，最好都是JSON支持的类型，特殊的类型不要出现在这，虽然这里也做了处理
 FString FLCJsonHelper::GetJsonString(const TLCMap& Value, bool bNeedNull) {
 	FString JsonStr;
-	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonStr);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
+	// typedef  TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>> FDiffJsonWriter;
+	// typedef  TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>> FDiffJsonWriterFactory;
 	JsonWriter->WriteObjectStart();
 	for (auto Tuple : Value) {
 		if (Tuple.Value.IsIntegerType()) {
@@ -51,7 +54,7 @@ FString FLCJsonHelper::GetJsonString(const TLCMap& Value, bool bNeedNull) {
 
 FString FLCJsonHelper::GetJsonString(const TLCArray& Value, bool bNeedNull) {
 	FString JsonStr;
-	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonStr);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
 	JsonWriter->WriteArrayStart();
 	for (auto SubValue : Value) {
 		if (SubValue.IsIntegerType()) {

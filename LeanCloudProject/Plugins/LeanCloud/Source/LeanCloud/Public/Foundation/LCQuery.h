@@ -27,7 +27,7 @@ public:
 	int64 Limit = 0;
 	int64 Skip = 0;
 	bool IncludeACL = false;
-	FString WhereString;
+	void SetWhereString(const FString& InWhereStr);
 
 	TSharedPtr<FLCApplication> GetApplicationPtr() const;
 	FString GetClassName() const;
@@ -88,19 +88,24 @@ public:
 	FLCQuery& WhereOrderByDescending(const FString& Key);
 	
 private:
+	
 	FString ObjectClassName;
 	TWeakPtr<FLCApplication> ApplicationPtr;
 	TSet<FString> IncludedKeys;
 	TSet<FString> SelectedKeys;
 	TArray<FString> OrderedKeys;
-	TLCMap ConstraintDictionary;
+	TMap<FString, TLCMap> WhereMap;
+	TMap<FString, TLCArray> WhereArray;
 	TLCMap ExtraParameters;
+	FString WhereString;
+
 	
 	void Find(const TLCMap& Parameters, const FLeanCloudQueryObjectsDelegate& CallBack) const;
-	TArray<TSharedPtr<FLCObject>> ProcessResults(const TLCArray& Results, const FString& InClassName = "") const;
 	TLCMap GetParameters() const;
 	FString LconWhereString() const;
 	TLCMap LconValueWithoutWhere() const;
-	void AddArrayConstraint(const FString& OpKey, const FLCValue& Value);
 	static FLCQuery Combine(const FString& OpKey, const TArray<FLCQuery>& Querys);
+	void AddArrayConstraint(const FString& OpKey, const FLCValue& Value);
+	void AddWhereConstraint(const FString& Key, const FString& OpStr, const FLCValue& InValue);
+
 };

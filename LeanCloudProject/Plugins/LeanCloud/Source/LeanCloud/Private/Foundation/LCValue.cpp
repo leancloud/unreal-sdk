@@ -65,6 +65,45 @@ FLCValue FLCValue::GetLconValue() const
 	return ValuePtr->GetLconValue();
 }
 
+FLCValue FLCValue::GetFromLconValue() const {
+	if (IsArrayType()) {
+		TLCArray Array;
+		for (auto AsArray : this->AsArray()) {
+			Array.Add(AsArray.GetFromLconValue());
+		}
+		return Array;
+	}
+	else if (IsMapType()) {
+		TLCMap Map = this->AsMap();
+		FLCValue* TypeStrPtr = Map.Find("__type");
+		if (TypeStrPtr && TypeStrPtr->IsStringType()) {
+			FString TypeStr = TypeStrPtr->AsString();
+			if (TypeStr == "Pointer") {
+				TSharedPtr<FLCObject> Object = MakeShared<FLCObject>((*this)["className"].AsString(),
+				                                                     (*this)["objectId"].AsString());
+				return Object;
+			}
+			else if (TypeStr == "Date") {
+				return (*this)["iso"].AsDate();
+			}
+			else if (TypeStr == "Bytes") {
+				return (*this)["base64"].AsData();
+			}
+			else if (TypeStr == "GeoPoint") {
+				return FLCGeoPoint((*this)["latitude"].AsDouble(), (*this)["longitude"].AsDouble());
+			}
+		}
+		TLCMap ResultMap;
+		for (auto Result : Map) {
+			ResultMap.Add(Result.Key, Result.Value.GetFromLconValue());
+		}
+		return ResultMap;
+	}
+	else {
+		return *this;
+	}
+}
+
 void FLCValue::Reset() {
 	ValuePtr = MakeShared<FLCValueNone>();
 }
@@ -156,6 +195,126 @@ TSharedPtr<FLCObject> FLCValue::AsObject() const {
 
 TArray<uint8> FLCValue::AsData() const {
 	return ValuePtr->AsData();
+}
+
+FArchive& operator<<(FArchive& Ar, FLCValue& InValue) {
+	if (Ar.IsLoading()) {
+		ELCValueType ValueType;
+		Ar << ValueType;
+		switch (ValueType) {
+		case ELCValueType::None:
+			InValue.ValuePtr = MakeShared<FLCValueNone>();
+			break;
+		case ELCValueType::String: {
+			FString RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueString>(RealValue);
+		}
+			break;
+		case ELCValueType::Integer: {
+			int64 RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueInteger>(RealValue);
+		}
+			break;
+		case ELCValueType::Double: {
+			double RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueDouble>(RealValue);
+		}
+			break;
+		case ELCValueType::Boolean: {
+			bool RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueBoolean>(RealValue);
+		}
+			break;
+		case ELCValueType::Array: {
+			TLCArray RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueArray>(RealValue);
+		}
+			break;
+		case ELCValueType::Map: {
+			TLCMap RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueMap>(RealValue);
+		}
+			break;
+		case ELCValueType::Date: {
+			FDateTime RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueDate>(RealValue);
+		}
+			break;
+		case ELCValueType::GeoPoint: {
+			FLCGeoPoint RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueGeoPoint>(RealValue);
+		}
+			break;
+		case ELCValueType::Data: {
+			TArray<uint8> RealValue;
+			Ar << RealValue;
+			InValue.ValuePtr = MakeShared<FLCValueData>(RealValue);
+		}
+			break;
+		case ELCValueType::Object: {
+			TSharedPtr<FLCObject> RealValue = MakeShared<FLCObject>("");
+			Ar << *RealValue.Get();
+			InValue.ValuePtr = MakeShared<FLCValueObject>(RealValue);
+		}
+			break;
+		}
+
+	} else {
+		Ar << InValue.ValuePtr->ValueType;
+		switch (InValue.ValuePtr->ValueType) {
+		case ELCValueType::None:
+			break;
+		case ELCValueType::String: {
+			Ar << StaticCastSharedPtr<FLCValueString>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Integer: {
+			Ar << StaticCastSharedPtr<FLCValueInteger>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Double: {
+			Ar << StaticCastSharedPtr<FLCValueDouble>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Boolean: {
+			Ar << StaticCastSharedPtr<FLCValueBoolean>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Array: {
+			Ar << StaticCastSharedPtr<FLCValueArray>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Map: {
+			Ar << StaticCastSharedPtr<FLCValueMap>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Date: {
+			Ar << StaticCastSharedPtr<FLCValueDate>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::GeoPoint: {
+			Ar << StaticCastSharedPtr<FLCValueGeoPoint>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Data: {
+			Ar << StaticCastSharedPtr<FLCValueData>(InValue.ValuePtr)->Value;
+		}
+			break;
+		case ELCValueType::Object: {
+			Ar << *StaticCastSharedPtr<FLCValueObject>(InValue.ValuePtr)->Value.Get();
+		}
+			break;
+		}
+	}
+	return Ar;
 }
 
 FLCValue::~FLCValue() {

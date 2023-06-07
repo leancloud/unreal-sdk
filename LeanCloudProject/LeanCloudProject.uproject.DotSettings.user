@@ -1,8 +1,7 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d39d39e4_002Dc7b1_002D42aa_002Da2d6_002D4ef0d21616c1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="3 Remove" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.3 Remove&lt;/TestId&gt;
-    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.3 Fetch&lt;/TestId&gt;
-    &lt;TestId&gt;UnrealTest::A89E6E58-1925-6BB7-BC87-8BEECBB78F86::::LeanCloud.Storage.4 Fetch&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=05d080d9_002Db657_002D4e5f_002D99b9_002Daff8b869e869/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="会话" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;And&gt;
+    &lt;Namespace&gt;LeanCloud.Storage&lt;/Namespace&gt;
+    &lt;Project Location="/Users/huangyifeng/Work/Leancloud/unreal-sdk/LeanCloudProject/Plugins/LeanCloudTest/Source/LeanCloudTest" Presentation="&amp;lt;LeanCloudProject&amp;gt;\&amp;lt;Plugins&amp;gt;\&amp;lt;LeanCloudTest&amp;gt;\&amp;lt;Source&amp;gt;\&amp;lt;LeanCloudTest&amp;gt;" /&gt;
+  &lt;/And&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -13,9 +13,7 @@ public:
 	void SetApplicationPtr(TSharedPtr<FLCApplication> InPtr);
 	TSharedPtr<FLCApplication> GetApplicationPtr() const;
 	
-	// FLCObject(const FString& InClassName, const TLCMap& InServerData);
 	FLCObject(const FString& InClassName);
-	// FLCObject(const TLCMap& InServerData);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
 	virtual ~FLCObject();
 	
@@ -34,6 +32,8 @@ public:
 	FString ToString();
 	static TSharedPtr<FLCObject> Parse(const FString& ObjectString);
 	
+	FLCSaveOption GenerateSaveOption() const;
+	
 	void Save(FLeanCloudBoolResultDelegate CallBack = nullptr);
 	void Save(const FLCSaveOption& Option, FLeanCloudBoolResultDelegate CallBack = nullptr);
 	void Fetch(FLeanCloudBoolResultDelegate CallBack = nullptr);
@@ -51,10 +51,21 @@ public:
 	FString GetObjectId() const;
 	TLCMap GetServerData() const;
 	FString GetInternalId();
-	
-	bool ParseTime(const FString& InTimeString, FDateTime& OutTime) const;
+
+	friend FArchive& operator<<(FArchive& Ar, FLCObject& Object);
+
+	template <typename SubClass>
+	static TSharedPtr<SubClass> CreateObject(const TLCMap& InServerData) {
+		if (InServerData.Num() == 0) {
+			return nullptr;
+		}
+		TSharedPtr<SubClass> Ptr = MakeShared<SubClass>();
+		Ptr->UpdateDataFromServer(InServerData);
+		return MoveTemp(Ptr);
+	}
 
 protected:
+	void UpdateDataFromServer(const TLCMap& InServerData);
 
 private:
 	friend class FLCObjectUpdater;
@@ -64,5 +75,4 @@ private:
 	TLCMap Operations;
 	FString _InternalId;
 	void ClearOperations();
-	void UpdateDataFromServer(const TLCMap& InServerData);
 };

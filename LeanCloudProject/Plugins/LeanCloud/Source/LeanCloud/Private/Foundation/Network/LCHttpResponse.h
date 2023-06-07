@@ -1,6 +1,8 @@
 #pragma once
 #include "LCError.h"
+#include "LCObject.h"
 #include "LCValue.h"
+#include "Foundation/Tools/LCHelper.h"
 
 class FLCHttpResponse {
 public:
@@ -33,5 +35,11 @@ public:
 		else {
 			return 0;
 		}
+	}
+
+	void PerformBoolDelegateByResponse(const FLeanCloudBoolResultDelegate& CallBack) const {
+		FLCHelper::PerformOnGameThread([=]() {
+			CallBack.ExecuteIfBound(bIsSuccess(), Error);
+		});
 	}
 };

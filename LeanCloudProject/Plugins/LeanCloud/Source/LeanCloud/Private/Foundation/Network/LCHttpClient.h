@@ -37,5 +37,5 @@ private:
 
 	FString CreateRequestSignature();
 
-	TMap<FString, FString> CreateCommonHeaders();
+	TMap<FString, FString> CreateCommonHeaders(const FLCHttpRequest& LCRequest);
 };

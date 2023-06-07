@@ -76,6 +76,7 @@ struct LEANCLOUD_API FLCValue {
 	}
 
 	FLCValue GetLconValue() const;
+	FLCValue GetFromLconValue() const;
 
 	void Reset();
 
@@ -102,7 +103,8 @@ struct LEANCLOUD_API FLCValue {
 	FLCGeoPoint AsGeoPoint() const;
 	TSharedPtr<FLCObject> AsObject() const;
 	TArray<uint8> AsData() const;
-
+	friend LEANCLOUD_API FArchive& operator<<(FArchive& Ar, FLCValue& InValue);
+	
 	~FLCValue();
 
 private:

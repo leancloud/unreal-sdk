@@ -1,7 +1,6 @@
 #include "LCObject.h"
 
 #include "LCObjectUpdater.h"
-#include "Tools/LCHelper.h"
 #include "Tools/LCJsonHelper.h"
 static FString KeyClassName = "className";
 static FString KeyCreatedAt = "createdAt";
@@ -19,7 +18,7 @@ TSharedPtr<FLCApplication> FLCObject::GetApplicationPtr() const {
 		return ApplicationPtr.Pin();
 	}
 	else {
-		return FLCApplication::Default;
+		return FLCApplication::DefaultPtr;
 	}
 }
 
@@ -121,6 +120,11 @@ TSharedPtr<FLCObject> FLCObject::Parse(const FString& ObjectString) {
 	return nullptr;
 }
 
+FLCSaveOption FLCObject::GenerateSaveOption() const {
+	FLCQuery Query = FLCQuery(GetClassName(), GetApplicationPtr());
+	return FLCSaveOption(Query);
+}
+
 void FLCObject::Save(FLeanCloudBoolResultDelegate CallBack) {
 	TArray<TSharedPtr<FLCObject>> TempArr;
 	if (DoesSharedInstanceExist()) {
@@ -215,6 +219,7 @@ FString FLCObject::GetObjectId() const {
 }
 
 TLCMap FLCObject::GetServerData() const {
+	// FMemoryReader
 	return ServerData;
 }
 
@@ -229,17 +234,30 @@ FString FLCObject::GetInternalId() {
 	return _InternalId;
 }
 
-bool FLCObject::ParseTime(const FString& InTimeString, FDateTime& OutTime) const {
-	return true;
-}
-
 void FLCObject::ClearOperations() {
 	Operations.Empty();
 }
 
 void FLCObject::UpdateDataFromServer(const TLCMap& InServerData) {
 	for (auto SubData : InServerData) {
-		ServerData.Add(SubData.Key, SubData.Value);
+		ServerData.Add(SubData.Key, SubData.Value.GetFromLconValue());
 	}
 }
 
+// 预留，万一以后Object的结构有变化
+static int ObjectVersion = 1;
+
+FArchive& operator<<(FArchive& Ar, FLCObject& Object) {
+	int Version = ObjectVersion;
+	if (Ar.IsLoading()) {
+		Ar << Version;
+		// if (Version == ObjectVersion) {
+		// 	
+		// } else if (Version == 1) {
+		// 	
+		// }
+		return Ar << Object.ServerData << Object.Operations << Object._InternalId;
+	} else {
+		return Ar << Version << Object.ServerData << Object.Operations << Object._InternalId;
+	}
+}

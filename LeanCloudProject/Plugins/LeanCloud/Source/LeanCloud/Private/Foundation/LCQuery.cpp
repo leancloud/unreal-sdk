@@ -7,6 +7,9 @@
 #include "Tools/LCHelper.h"
 #include "Tools/LCJsonHelper.h"
 
+static FString EqualOp = TEXT("__eq");
+
+
 FLCQuery::FLCQuery(const FString& InClassName) {
 	ObjectClassName = InClassName;
 }
@@ -72,7 +75,36 @@ void FLCQuery::Count(const FLeanCloudQueryCountDelegate& CallBack) const {
 }
 
 TLCMap FLCQuery::GetLconWhere() const {
-	return ConstraintDictionary;
+	TLCMap ResultMap;
+	TLCArray AndArray;
+	for (auto KeyMap : WhereMap) {
+		TLCMap TempMap = TLCMap(KeyMap.Value);
+		auto EqualValuePtr = TempMap.Find(EqualOp);
+		if (EqualValuePtr) {
+			TLCMap AndMap;
+			AndMap.Add(KeyMap.Key, *EqualValuePtr);
+			AndArray.Add(AndMap);
+			TempMap.Remove(EqualOp);
+		}
+		if (TempMap.Num() > 0) {
+			ResultMap.Add(KeyMap.Key, TempMap);
+		}
+	}
+	for (auto ArrayMap : WhereArray) {
+		if (ArrayMap.Key == "$and") {
+			AndArray.Append(ArrayMap.Value);
+		} else {
+			ResultMap.Add(ArrayMap.Key, ArrayMap.Value);
+		}
+	}
+	if (AndArray.Num() > 0) {
+		ResultMap.Add("$and", AndArray);
+	}
+	return MoveTemp(ResultMap);
+}
+
+void FLCQuery::SetWhereString(const FString& InWhereStr) {
+	WhereString = InWhereStr;
 }
 
 TSharedPtr<FLCApplication> FLCQuery::GetApplicationPtr() const {
@@ -80,7 +112,7 @@ TSharedPtr<FLCApplication> FLCQuery::GetApplicationPtr() const {
 		return ApplicationPtr.Pin();
 	}
 	else {
-		return FLCApplication::Default;
+		return FLCApplication::DefaultPtr;
 	}
 }
 
@@ -120,150 +152,104 @@ FLCQuery& FLCQuery::WhereKeyIncluded(const FString& Key) {
 }
 
 FLCQuery& FLCQuery::WhereKeyExisted(const FString& Key) {
-	TLCMap ContentMap;
-	ContentMap.Add("$exists", true);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$exists", true);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereKeyNotExisted(const FString& Key) {
-	TLCMap ContentMap;
-	ContentMap.Add("$exists", false);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$exists", false);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereEqualTo(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add(Key, Value);
-	AddArrayConstraint("$and", ContentMap);
+	AddWhereConstraint(Key, EqualOp, Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereNotEqualTo(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add("$ne", Value.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$ne", Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereLessThan(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add("$lt", Value.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$lt", Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereLessThanOrEqualTo(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add("$lte", Value.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$lte", Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereGreaterThan(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add("$gt", Value.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$gt", Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereGreaterThanOrEqualTo(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	ContentMap.Add("$gte", Value.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$gte", Value);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereContainedIn(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	if (Value.IsArrayType()) {
-		ContentMap.Add("$in", Value.GetLconValue());
-	} else {
-		ContentMap.Add("$in", {Value.GetLconValue()});
-	}
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$in", Value.IsArrayType() ? Value : TLCArray({Value}));
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereNotContainedIn(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	if (Value.IsArrayType()) {
-		ContentMap.Add("$nin", Value.GetLconValue());
-	} else {
-		ContentMap.Add("$nin", {Value.GetLconValue()});
-	}
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$nin", Value.IsArrayType() ? Value : TLCArray({Value}));
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereContainedAllIn(const FString& Key, const FLCValue& Value) {
-	TLCMap ContentMap;
-	if (Value.IsArrayType()) {
-		ContentMap.Add("$all", Value.GetLconValue());
-	} else {
-		ContentMap.Add("$all", {Value.GetLconValue()});
-	}
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$all", Value.IsArrayType() ? Value : TLCArray({Value}));
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereEqualToSize(const FString& Key, int64 Size) {
-	TLCMap ContentMap;
-	ContentMap.Add("$size", Size);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$size", Size);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereNear(const FString& Key, const FLCGeoPoint& GeoPoint) {
-	TLCMap ContentMap;
-	ContentMap.Add("$nearSphere", FLCValue(GeoPoint).GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$nearSphere", GeoPoint);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereWithinGeoBox(const FString& Key, const FLCGeoPoint& Southwest, const FLCGeoPoint& Northeast) {
 	TLCMap Box;
-	Box.Add("$box", {FLCValue(Southwest).GetLconValue(), FLCValue(Northeast).GetLconValue()});
-	TLCMap ContentMap;
-	ContentMap.Add("$within", Box);
-	ConstraintDictionary.Add(Key, ContentMap);
+	Box.Add("$box", {Southwest, Northeast});
+	AddWhereConstraint(Key, "$within", Box);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereWithinKilometers(const FString& Key, const FLCGeoPoint& GeoPoint, double MaxDistance,
 	double MinDistance) {
-	TLCMap ContentMap;
-	ContentMap.Add("$nearSphere", FLCValue(GeoPoint).GetLconValue());
-	ContentMap.Add("$maxDistanceInKilometers", MaxDistance);
+	AddWhereConstraint(Key, "$nearSphere", GeoPoint);
+	AddWhereConstraint(Key, "$maxDistanceInKilometers", MaxDistance);
 	if (MinDistance > 0) {
-		ContentMap.Add("$minDistanceInKilometers", MinDistance);
+		AddWhereConstraint(Key, "$minDistanceInKilometers", MinDistance);
 	}
-	ConstraintDictionary.Add(Key, ContentMap);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereWithinMiles(const FString& Key, const FLCGeoPoint& GeoPoint, double MaxDistance,
 	double MinDistance) {
-	TLCMap ContentMap;
-	ContentMap.Add("$nearSphere", FLCValue(GeoPoint).GetLconValue());
-	ContentMap.Add("$maxDistanceInMiles", MaxDistance);
+	AddWhereConstraint(Key, "$nearSphere", GeoPoint);
+	AddWhereConstraint(Key, "$maxDistanceInMiles", MaxDistance);
 	if (MinDistance > 0) {
-		ContentMap.Add("$minDistanceInMiles", MinDistance);
+		AddWhereConstraint(Key, "$minDistanceInMiles", MinDistance);
 	}
-	ConstraintDictionary.Add(Key, ContentMap);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereWithinRadians(const FString& Key, const FLCGeoPoint& GeoPoint, double MaxDistance,
 	double MinDistance) {
-	TLCMap ContentMap;
-	ContentMap.Add("$nearSphere", FLCValue(GeoPoint).GetLconValue());
-	ContentMap.Add("$maxDistanceInRadians", MaxDistance);
+	AddWhereConstraint(Key, "$nearSphere", GeoPoint);
+	AddWhereConstraint(Key, "$maxDistanceInRadians", MaxDistance);
 	if (MinDistance > 0) {
-		ContentMap.Add("$minDistanceInRadians", MinDistance);
+		AddWhereConstraint(Key, "$minDistanceInRadians", MinDistance);
 	}
-	ConstraintDictionary.Add(Key, ContentMap);
 	return *this;
 }
 
@@ -275,9 +261,7 @@ FLCQuery& FLCQuery::WhereMatchesKeyInQuery(const FString& Key, const FString& Ke
 	TLCMap SelectMap;
 	SelectMap.Add("query", Query.GetLconValue());
 	SelectMap.Add("key", KeyInQuery);
-	TLCMap ContentMap;
-	ContentMap.Add("$select", SelectMap);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$select", SelectMap);
 	return *this;
 }
 
@@ -286,9 +270,7 @@ FLCQuery& FLCQuery::WhereMatchesQuery(const FString& Key, const FLCQuery& Query)
 		FLCDebuger::LogWarning("WhereMatchesKeyInQuery: ApplicationPtr is not same");
 		return *this;
 	}
-	TLCMap ContentMap;
-	ContentMap.Add("$inQuery", Query.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$inQuery", Query.GetLconValue());
 	return *this;
 }
 
@@ -300,9 +282,7 @@ FLCQuery& FLCQuery::WhereDoesNotMatchKeyInQuery(const FString& Key, const FStrin
 	TLCMap SelectMap;
 	SelectMap.Add("query", Query.GetLconValue());
 	SelectMap.Add("key", KeyInQuery);
-	TLCMap ContentMap;
-	ContentMap.Add("$dontSelect", SelectMap);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$dontSelect", SelectMap);
 	return *this;
 }
 
@@ -311,46 +291,34 @@ FLCQuery& FLCQuery::WhereDoesNotMatchQuery(const FString& Key, const FLCQuery& Q
 		FLCDebuger::LogWarning("WhereMatchesKeyInQuery: ApplicationPtr is not same");
 		return *this;
 	}
-	TLCMap ContentMap;
-	ContentMap.Add("$notInQuery", Query.GetLconValue());
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$notInQuery", Query.GetLconValue());
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereMatchedRegularExpression(const FString& Key, const FString& Expression, const FString& Option) {
-	TLCMap ContentMap;
-	ContentMap.Add("$regex", Expression);
-	ContentMap.Add("$options", Option);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$regex", Expression);
+	AddWhereConstraint(Key, "$options", Option);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereMatchedSubstring(const FString& Key, const FString& Substring) {
-	TLCMap ContentMap;
-	ContentMap.Add("$regex", Substring);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$regex", Substring);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WherePrefixedBy(const FString& Key, const FString& Prefix) {
-	TLCMap ContentMap;
-	ContentMap.Add("$regex", "^" + Prefix);
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$regex", "^" + Prefix);
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereSuffixedBy(const FString& Key, const FString& Suffix) {
-	TLCMap ContentMap;
-	ContentMap.Add("$regex", Suffix + "$");
-	ConstraintDictionary.Add(Key, ContentMap);
+	AddWhereConstraint(Key, "$regex", Suffix + "$");
 	return *this;
 }
 
 FLCQuery& FLCQuery::WhereRelatedTo(const FString& Key, const TSharedPtr<FLCObject>& Object) {
-	TLCMap ObjectMap;
-	ObjectMap.Add("object", FLCValue(Object).GetLconValue());
-	ObjectMap.Add("key", Key);
-	ConstraintDictionary.Add("$relatedTo", ObjectMap);
+	AddWhereConstraint("$relatedTo", "object", Object);
+	AddWhereConstraint("$relatedTo", "key", Key);
 	return *this;
 }
 
@@ -380,12 +348,24 @@ void FLCQuery::Find(const TLCMap& Parameters, const FLeanCloudQueryObjectsDelega
 	Request.HttpMethod = ELCHttpMethod::GET;
 	Request.SetUrl(InApplicationPtr->AppRouter->GetRouteUrl(FLCHttpClient::GetEndpoint(ObjectClassName)));
 	Request.UrlParameters = RequestParameters;
+	FString ResultClassName = ObjectClassName;
 	InApplicationPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
 											 [=](const FLCHttpResponse& InResponse) {
 												 if (InResponse.bIsSuccess()) {
-												 	auto Array = ProcessResults(InResponse.GetResults(), InResponse.Data["className"].AsString());
+												 	FString RealClassName = InResponse.Data["className"].AsString();
+												    if (RealClassName.IsEmpty()) {
+												    	RealClassName = ResultClassName;
+												    }
+													 TArray<TSharedPtr<FLCObject>> ObjectPtrs;
+													 for (auto Result : InResponse.GetResults()) {
+														 TSharedPtr<FLCObject> ObjectPtr = MakeShared<FLCObject>(
+															 RealClassName);
+														 ObjectPtr->ApplicationPtr = InApplicationPtr;
+														 ObjectPtr->UpdateDataFromServer(Result.AsMap());
+														 ObjectPtrs.Add(ObjectPtr);
+													 }
 												 	FLCHelper::PerformOnGameThread([=]() {
-														 CallBack.ExecuteIfBound(Array, InResponse.Error);
+														 CallBack.ExecuteIfBound(ObjectPtrs, InResponse.Error);
 													 });
 												 } else {
 													 FLCHelper::PerformOnGameThread([=]() {
@@ -393,21 +373,6 @@ void FLCQuery::Find(const TLCMap& Parameters, const FLeanCloudQueryObjectsDelega
 													 });
 												 }
 											 }));
-}
-
-TArray<TSharedPtr<FLCObject>> FLCQuery::ProcessResults(const TLCArray& Results, const FString& InClassName) const {
-	FString RealClassName = InClassName;
-	if (RealClassName.IsEmpty()) {
-		RealClassName = ObjectClassName;
-	}
-	TArray<TSharedPtr<FLCObject>> ObjectPtrs;
-	for (auto Result : Results) {
-		TSharedPtr<FLCObject> ObjectPtr = MakeShared<FLCObject>(RealClassName);
-		ObjectPtr->ApplicationPtr = GetApplicationPtr();
-		ObjectPtr->UpdateDataFromServer(Result.AsMap());
-		ObjectPtrs.Add(ObjectPtr);
-	}
-	return MoveTemp(ObjectPtrs);
 }
 
 TLCMap FLCQuery::GetParameters() const {
@@ -423,6 +388,7 @@ FString FLCQuery::LconWhereString() const {
 	if (!WhereString.IsEmpty()) {
 		return WhereString;
 	}
+	auto ConstraintDictionary = GetLconWhere();
 	if (ConstraintDictionary.Num() > 0) {
 		return FLCJsonHelper::GetJsonString(ConstraintDictionary);
 	}
@@ -432,6 +398,7 @@ FString FLCQuery::LconWhereString() const {
 FLCValue FLCQuery::GetLconValue() const
 {
 	auto Parameters = LconValueWithoutWhere();
+	auto ConstraintDictionary = GetLconWhere();
 	if (ConstraintDictionary.Num() > 0) {
 		Parameters.Add("where", ConstraintDictionary);
 	}
@@ -465,14 +432,6 @@ TLCMap FLCQuery::LconValueWithoutWhere() const {
 	return MoveTemp(Dictionary);
 }
 
-void FLCQuery::AddArrayConstraint(const FString& OpKey, const FLCValue& Value) {
-	auto ResultArr = ConstraintDictionary.Find(OpKey);
-	if (ResultArr && ResultArr->IsArrayType()) {
-		ResultArr->AsArray().Add(Value);
-	} else {
-		ConstraintDictionary.Add(OpKey, {Value});
-	}
-}
 
 FLCQuery FLCQuery::Combine(const FString& OpKey, const TArray<FLCQuery>& Querys) {
 	if (Querys.Num() == 0) {
@@ -493,7 +452,27 @@ FLCQuery FLCQuery::Combine(const FString& OpKey, const TArray<FLCQuery>& Querys)
 	}
 	FLCQuery ResultQuery(ClassName, AppPtr);
 	for (auto Query : Querys) {
-		ResultQuery.AddArrayConstraint(OpKey, Query.ConstraintDictionary);
+		ResultQuery.AddArrayConstraint(OpKey, Query.GetLconWhere());
 	}
 	return MoveTemp(ResultQuery);
+}
+
+void FLCQuery::AddArrayConstraint(const FString& OpKey, const FLCValue& Value) {
+	TLCArray *OpArr = WhereArray.Find(OpKey);
+	if (OpArr) {
+		OpArr->Add(Value.GetLconValue());
+	} else {
+		WhereArray.Add(OpKey, TLCArray({Value.GetLconValue()}));
+	}
+}
+
+void FLCQuery::AddWhereConstraint(const FString& Key, const FString& OpStr, const FLCValue& InValue) {
+	TLCMap* OpMap = WhereMap.Find(Key);
+	if (OpMap) {
+		OpMap->Add(OpStr, InValue.GetLconValue());
+	} else {
+		TLCMap NewOpMap;
+		NewOpMap.Add(OpStr, InValue.GetLconValue());
+		WhereMap.Add(Key, NewOpMap);
+	}
 }

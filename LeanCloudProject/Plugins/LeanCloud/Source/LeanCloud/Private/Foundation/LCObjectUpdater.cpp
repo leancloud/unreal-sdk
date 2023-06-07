@@ -16,9 +16,12 @@ void FLCObjectUpdater::Save(const TArray<TSharedPtr<FLCObject>>& Objects, const 
 	if (Option.GetFetchWhenSave()) {
 		Para.Add("fetchWhenSave", true);
 	}
-	auto Where = Option.GetMatchQuery().GetLconWhere();
-	if (Where.Num() > 0) {
-		Para.Add("where", Where);
+	auto QueryPtr = Option.GetMatchQuery();
+	if (QueryPtr.IsValid()) {
+		auto Where = QueryPtr->GetLconWhere();
+		if (Where.Num() > 0) {
+			Para.Add("where", Where);
+		}
 	}
 	Save(Objects, Para, PerformCallBackOnGameThread(CallBack));
 }
@@ -34,7 +37,7 @@ void FLCObjectUpdater::Fetch(const TArray<TSharedPtr<FLCObject>>& Objects, const
 		TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(FamilyObjects);
 		FLCHttpRequest Request;
 		Request.HttpMethod = ELCHttpMethod::POST;
-		Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchUrl());
+		Request.SetUrl(ApplicationsPtr->AppRouter->GetRouteUrl("batch"));
 		TLCArray BatchRequests;
 		TLCMap KeysParameters;
 		if (Keys.Num() > 0) {
@@ -75,7 +78,7 @@ void FLCObjectUpdater::Delete(const TArray<TSharedPtr<FLCObject>>& Objects,
 		TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(FamilyObjects);
 		FLCHttpRequest Request;
 		Request.HttpMethod = ELCHttpMethod::POST;
-		Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchUrl());
+		Request.SetUrl(ApplicationsPtr->AppRouter->GetRouteUrl("batch"));
 		TLCArray BatchRequests;
 		for (auto FlcObject : Objects) {
 			BatchRequests.Add(GenerateBatchRequest(ELCHttpMethod::DELETE, TLCMap(), FlcObject));
@@ -241,7 +244,7 @@ void FLCObjectUpdater::SaveInOneBatchRequest(const TArray<TSharedPtr<FLCObject>>
 	TSharedPtr<FLCApplication> ApplicationsPtr = GetApplicationsPtr(Objects);
 	FLCHttpRequest Request;
 	Request.HttpMethod = ELCHttpMethod::POST;
-	Request.SetUrl(ApplicationsPtr->AppRouter->GetBatchSaveUrl());
+	Request.SetUrl(ApplicationsPtr->AppRouter->GetRouteUrl("batch/save"));
 	TLCArray BatchRequests;
 	for (auto FlcObject : Objects) {
 		ELCHttpMethod HttpMethod = ELCHttpMethod::PUT;

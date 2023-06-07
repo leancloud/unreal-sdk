@@ -7,6 +7,7 @@
 #include "Foundation/Tools/LCHelper.h"
 #include "Foundation/Tools/LCJsonHelper.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Misc/App.h"
 
 FString FLCHttpClient::HeaderFieldName::Id = "X-LC-Id";
 FString FLCHttpClient::HeaderFieldName::Signature = "X-LC-Sign";
@@ -21,13 +22,15 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 	Request->SetURL(LCRequest.GetUrl());
 	Request->SetVerb(LexToString(LCRequest.HttpMethod));
 	Request->SetTimeout(ApplicationPtr.Pin()->GetConfig().HTTPRequestTimeoutInterval);
-	for (auto header : CreateCommonHeaders()) {
+	for (auto header : CreateCommonHeaders(LCRequest)) {
 		Request->SetHeader(header.Key, header.Value);
 	}
 	for (auto header : LCRequest.Headers) {
 		Request->SetHeader(header.Key, header.Value);
 	}
-	Request->SetContentAsString(FLCJsonHelper::GetJsonString(LCRequest.BodyParameters));
+	if (LCRequest.BodyParameters.Num() > 0) {
+		Request->SetContentAsString(FLCJsonHelper::GetJsonString(LCRequest.BodyParameters));
+	}
 	FLCDebuger::LogVerbose("-------------NetWork Requeset-------------");
 	FLCDebuger::LogVerbose("URL: " + Request->GetURL());
 	FLCDebuger::LogVerbose("Verb: " + Request->GetVerb());
@@ -41,9 +44,14 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 		[=](FHttpRequestPtr HttpRequest, FHttpResponsePtr Response, bool bWasSuccessful) {
 			FLCDebuger::LogVerbose("-------------NetWork Response-------------");
 			FLCDebuger::LogVerbose("URL: " + Request->GetURL());
-			FLCDebuger::LogVerbose("HttpCode: " + LexToString(Response->GetResponseCode()));
-			FLCDebuger::LogVerbose("Headers: " + FString::Join(Response->GetAllHeaders(), TEXT("\n")));
-			FLCDebuger::LogVerbose("Body: " + Response->GetContentAsString());
+			if (bWasSuccessful) {
+				FLCDebuger::LogVerbose("HttpCode: " + LexToString(Response->GetResponseCode()));
+				FLCDebuger::LogVerbose("Headers: " + FString::Join(Response->GetAllHeaders(), TEXT("\n")));
+				FLCDebuger::LogVerbose("Body: " + Response->GetContentAsString());
+			} else {
+				FLCDebuger::LogVerbose("Request Fail, No Response");
+			}
+
 			FLCDebuger::LogVerbose("------------------------------------------");
 			FLCHttpResponse LCResponse;
 			if (bWasSuccessful && Response.IsValid()) {
@@ -98,17 +106,22 @@ FString FLCHttpClient::CreateRequestSignature() {
 	return FMD5::HashAnsiString(*(TimeStr + ApplicationPtr.Pin()->GetAppKey())) + TEXT(",") + TimeStr;
 }
 
-TMap<FString, FString> FLCHttpClient::CreateCommonHeaders() {
+TMap<FString, FString> FLCHttpClient::CreateCommonHeaders(const FLCHttpRequest& LCRequest) {
 	TMap<FString, FString> HeaderMap;
 	HeaderMap.Add(HeaderFieldName::Id, ApplicationPtr.Pin()->GetAppId());
 	HeaderMap.Add(HeaderFieldName::Signature, CreateRequestSignature());
 	HeaderMap.Add("Accept", "application/json");
-	HeaderMap.Add("Content-Type", "application/json");
+
+	if (LCRequest.HttpMethod == ELCHttpMethod::GET) {
+		HeaderMap.Add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+	} else {
+		HeaderMap.Add("Content-Type", "application/json;charset=utf-8");
+	}
 	HeaderMap.Add(HeaderFieldName::Production, ApplicationPtr.Pin()->GetConfig().bIsProduction ? "1" : "0");
 	HeaderMap.Add(HeaderFieldName::UserAgent,
-	              FString::Printf(TEXT("LeanCloud-Unreal-SDK/%s/%s"), *FLCHelper::GetSystemName(),
+	              FString::Printf(TEXT("%s/%s/%s"), FApp::GetBuildVersion(), *FLCHelper::GetSystemName(),
 	                              TEXT(LeanCloud_Unreal_Version)));
-	TSharedPtr<FLCUser> UserPtr = ApplicationPtr.Pin()->CurrentUser;
+	TSharedPtr<FLCUser> UserPtr = ApplicationPtr.Pin()->GetCurrentUser();
 	if (UserPtr.IsValid()) {
 		HeaderMap.Add(FLCHttpClient::HeaderFieldName::Session, UserPtr->GetSessionToken());
 	}

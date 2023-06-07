@@ -50,6 +50,12 @@ FDateTime FLCValueString::AsDate() {
 	return OutDateTime;
 }
 
+TArray<uint8> FLCValueString::AsData() {
+	TArray<uint8> Result;
+	FBase64::Decode(Value, Result);
+	return MoveTemp(Result);
+}
+
 bool FLCValueString::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
 	if (!Rhs.IsValid() || Rhs->ValueType != ELCValueType::String) {
 		return false;
