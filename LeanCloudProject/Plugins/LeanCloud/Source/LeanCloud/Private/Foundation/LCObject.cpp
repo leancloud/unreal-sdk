@@ -9,7 +9,7 @@ static FString KeyObjectID = "objectId";
 static FString KeyACL = "ACL";
 static FString KeyIgnoreHooks = "__ignore_hooks";
 
-void FLCObject::SetApplicationPtr(TSharedPtr<FLCApplication> InPtr) {
+void FLCObject::SetApplicationPtr(const TSharedPtr<FLCApplication>& InPtr) {
 	ApplicationPtr = InPtr;
 }
 
@@ -69,7 +69,7 @@ FLCValue FLCObject::Get(const FString& Key) const {
 	}
 }
 
-void FLCObject::Increase(const FString& Key, int64 Value) {
+void FLCObject::Increase(const FString& Key, int Value) {
 	FLCValue OldValue = Get(Key);
 	if (OldValue.IsNoneType()) {
 		ServerData.Add(Key, Value);

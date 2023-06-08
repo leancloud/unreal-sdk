@@ -37,7 +37,8 @@ public class LeanCloudTest : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore", "LeanCloud",
+				"SlateCore", 
+				"LeanCloud",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -10,7 +10,7 @@ DECLARE_DELEGATE_TwoParams(FLeanCloudBoolResultDelegate, bool bIsSuccess, const 
 class LEANCLOUD_API FLCObject : public TSharedFromThis<FLCObject> {
 public:
 
-	void SetApplicationPtr(TSharedPtr<FLCApplication> InPtr);
+	void SetApplicationPtr(const TSharedPtr<FLCApplication>& InPtr);
 	TSharedPtr<FLCApplication> GetApplicationPtr() const;
 	
 	FLCObject(const FString& InClassName);
@@ -21,11 +21,23 @@ public:
 	void Unset(const FString& Key);
 	FLCValue Get(const FString& Key) const;
 
-	void Increase(const FString& Key, int64 Value = 1);
+	void Increase(const FString& Key, int Value = 1);
 	void Increase(const FString& Key, double Value = 1);
 
-	// 更新数组
+
+	/**
+	 * @brief 将指定对象或数组附加到数组末尾
+	 * @param Key 数组所在的Key
+	 * @param Value 要添加的对象
+	 * @param bIsUnique 确保对象唯一
+	 */
 	void Add(const FString& Key, const FLCValue& Value, bool bIsUnique = false);
+	
+	/**
+	 * @brief 从数组字段中删除指定对象或数组的所有实例
+	 * @param Key 数组所在的Key
+	 * @param Value 要删除的对象
+	 */
 	void Remove(const FString& Key, const FLCValue& Value);
 
 	// 序列化
@@ -55,12 +67,13 @@ public:
 	friend FArchive& operator<<(FArchive& Ar, FLCObject& Object);
 
 	template <typename SubClass>
-	static TSharedPtr<SubClass> CreateObject(const TLCMap& InServerData) {
+	static TSharedPtr<SubClass> CreateObject(const TLCMap& InServerData, const TSharedPtr<FLCApplication>& InPtr) {
 		if (InServerData.Num() == 0) {
 			return nullptr;
 		}
 		TSharedPtr<SubClass> Ptr = MakeShared<SubClass>();
 		Ptr->UpdateDataFromServer(InServerData);
+		Ptr->SetApplicationPtr(InPtr);
 		return MoveTemp(Ptr);
 	}
 

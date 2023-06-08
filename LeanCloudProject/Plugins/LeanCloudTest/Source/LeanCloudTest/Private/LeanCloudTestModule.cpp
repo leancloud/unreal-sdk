@@ -1,19 +1,18 @@
 #include "LeanCloudTestModule.h"
 
 #include "LCApplication.h"
-#include "LCObject.h"
-#include "LCQuery.h"
 
 #define LOCTEXT_NAMESPACE "FLeanCloudTestModule"
 
 void FLeanCloudTestModule::StartupModule()
 {
+	// FLCApplicationSettings Settings = FLCApplicationSettings();
+	// Settings.AppId = "your-client-id";
+	// Settings.AppKey = "your-client-token";
+	// Settings.ServerUrl = "https://your_server_url";
+	// FLCApplication::Register(Settings);
+	// TSharedPtr<FLCApplication> AppPtr = FLCApplication::Get("your-client-id");
 	
-	// FLCQuery Query = FLCQuery("UETest");
-	// Query.Find(FLeanCloudQueryObjectsDelegate::CreateLambda([=](TArray<TSharedPtr<FLCObject>> ObjectPtrs,
-	// 															const FLCError& _Error) {
-	// 	FLCObject::Delete(ObjectPtrs, nullptr);
-	// }));
 	FLCApplication::SetLogDelegate(FLeanCloudLogDelegate::CreateLambda([](ELCLogLevel LogLevel, const FString& LogMsg) {
 	switch (LogLevel) {
 	case ELCLogLevel::Error: 

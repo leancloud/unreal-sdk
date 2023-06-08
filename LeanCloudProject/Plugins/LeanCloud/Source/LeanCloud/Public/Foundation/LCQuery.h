@@ -13,6 +13,7 @@ DECLARE_DELEGATE_TwoParams(FLeanCloudQueryCountDelegate, int Count, const FLCErr
 
 class LEANCLOUD_API FLCQuery {
 public:
+	FLCQuery() = default;
 	FLCQuery(const FString& InClassName);
 	FLCQuery(const FString& InClassName, TSharedPtr<FLCApplication> InApplicationPtr);
 

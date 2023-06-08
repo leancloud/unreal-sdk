@@ -7,7 +7,7 @@
 #include "Tools/LCHelper.h"
 
 
-static FString KeyClassName = "_User";
+static FString KeyClassUserName = "_User";
 static FString KeyUsername = "username";
 static FString KeyPassword = "password";
 static FString KeyEmail = "email";
@@ -18,10 +18,10 @@ static FString KeyMobilePhoneVerified = "mobilePhoneVerified";
 static FString KeyAuthData = "authData";
 static FString KeyAnonymous = "anonymous";
 
-FLCUser::FLCUser() : FLCObject(KeyClassName) {
+FLCUser::FLCUser() : FLCObject(KeyClassUserName) {
 }
 
-FLCUser::FLCUser(const FString& InObjectId) : FLCObject(KeyClassName, InObjectId) {
+FLCUser::FLCUser(const FString& InObjectId) : FLCObject(KeyClassUserName, InObjectId) {
 }
 
 void FLCUser::SetUsername(const FString& InUserName) {
@@ -358,7 +358,7 @@ void FLCUser::PerformUserLoginDelegateByResponse(const FLeanCloudUserDelegate& C
                                                  const TSharedPtr<FLCApplication>& AppPtr) {
 	if (InResponse.bIsSuccess()) {
 		TSharedPtr<FLCUser> UserPtr = FLCObject::CreateObject<FLCUser>(
-			InResponse.Data.AsMap());
+			InResponse.Data.AsMap(), AppPtr);
 		if (UserPtr.IsValid()) {
 			AppPtr->SetCurrentUser(UserPtr);
 			FLCHelper::PerformOnGameThread([=]() {
