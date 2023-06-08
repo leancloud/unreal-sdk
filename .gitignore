@@ -1,5 +1,13 @@
 # Visual Studio 2015 user specific files
 .vs/
+.vscode
+.idea
+Binaries
+DerivedDataCache
+Intermediate
+Saved
+Product
+Build
 
 # Compiled Object files
 *.slo
