@@ -2,20 +2,6 @@
 #include "LCApplication.h"
 #include "LCHttpRequest.h"
 #include "LCHttpResponse.h"
-#include "LCValue.h"
-
-enum class ELCHttpDataType :uint8
-{
-	Object,
-	Pointer,
-	Relation,
-	GeoPoint,
-	Bytes,
-	Date,
-	File,
-};
-
-
 
 class FLCHttpClient {
 public:

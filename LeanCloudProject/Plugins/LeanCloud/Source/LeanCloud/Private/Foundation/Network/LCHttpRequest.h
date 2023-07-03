@@ -1,8 +1,7 @@
 #pragma once
 #include "LCObject.h"
 
-enum class ELCHttpMethod :uint8
-{
+enum class ELCHttpMethod :uint8 {
 	GET,
 	POST,
 	PUT,
@@ -11,10 +10,14 @@ enum class ELCHttpMethod :uint8
 
 inline const TCHAR* LexToString(ELCHttpMethod HttpMethod) {
 	switch (HttpMethod) {
-	case ELCHttpMethod::GET: return TEXT("GET"); break;
-	case ELCHttpMethod::POST: return TEXT("POST"); break;
-	case ELCHttpMethod::PUT: return TEXT("PUT"); break;
-	case ELCHttpMethod::DELETE: return TEXT("DELETE"); break;
+	case ELCHttpMethod::GET: return TEXT("GET");
+		break;
+	case ELCHttpMethod::POST: return TEXT("POST");
+		break;
+	case ELCHttpMethod::PUT: return TEXT("PUT");
+		break;
+	case ELCHttpMethod::DELETE: return TEXT("DELETE");
+		break;
 	}
 	return TEXT("");
 }
@@ -25,11 +28,13 @@ public:
 	void SetUrl(const FString& InUrl);
 	FString GetOriginUrl() const;
 	FString GetUrl() const;
-	
+
 	TMap<FString, FString> Headers;
 	TLCMap UrlParameters;
 	TLCMap BodyParameters;
-	static  FString UrlEncodingParameters(const TLCMap& Parameters);
+	TLCArray BodyArray;
+	static FString UrlEncodingParameters(const TLCMap& Parameters);
+
 private:
 	FString Url;
 };

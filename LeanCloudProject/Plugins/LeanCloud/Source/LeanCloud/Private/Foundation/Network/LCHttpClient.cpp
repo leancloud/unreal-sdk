@@ -31,6 +31,9 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 	if (LCRequest.BodyParameters.Num() > 0) {
 		Request->SetContentAsString(FLCJsonHelper::GetJsonString(LCRequest.BodyParameters));
 	}
+	if (LCRequest.BodyArray.Num() > 0) {
+		Request->SetContentAsString(FLCJsonHelper::GetJsonString(LCRequest.BodyArray));
+	}
 	FLCDebuger::LogVerbose("-------------NetWork Requeset-------------");
 	FLCDebuger::LogVerbose("URL: " + Request->GetURL());
 	FLCDebuger::LogVerbose("Verb: " + Request->GetVerb());
@@ -48,7 +51,8 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 				FLCDebuger::LogVerbose("HttpCode: " + LexToString(Response->GetResponseCode()));
 				FLCDebuger::LogVerbose("Headers: " + FString::Join(Response->GetAllHeaders(), TEXT("\n")));
 				FLCDebuger::LogVerbose("Body: " + Response->GetContentAsString());
-			} else {
+			}
+			else {
 				FLCDebuger::LogVerbose("Request Fail, No Response");
 			}
 
@@ -91,11 +95,14 @@ void FLCHttpClient::Request(const FLCHttpRequest& LCRequest, FLCHttpResponse::FD
 FString FLCHttpClient::GetEndpoint(const FString& ClassName) {
 	if (ClassName == "_User") {
 		return "users";
-	} else if (ClassName == "_Role") {
+	}
+	else if (ClassName == "_Role") {
 		return "roles";
-	} else if (ClassName == "_Installation") {
+	}
+	else if (ClassName == "_Installation") {
 		return "installations";
-	} else {
+	}
+	else {
 		return FString::Printf(TEXT("classes/%s"), *ClassName);
 	}
 }
@@ -114,7 +121,8 @@ TMap<FString, FString> FLCHttpClient::CreateCommonHeaders(const FLCHttpRequest& 
 
 	if (LCRequest.HttpMethod == ELCHttpMethod::GET) {
 		HeaderMap.Add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-	} else {
+	}
+	else {
 		HeaderMap.Add("Content-Type", "application/json;charset=utf-8");
 	}
 	HeaderMap.Add(HeaderFieldName::Production, ApplicationPtr.Pin()->GetConfig().bIsProduction ? "1" : "0");
