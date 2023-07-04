@@ -13,8 +13,8 @@ public:
 		Object,
 	};
 
-	DECLARE_DELEGATE_OneParam(FStatisticsDelegate, TArray<FLCLeaderboardStatistic> Statistics);
-	DECLARE_DELEGATE_TwoParams(FRankingsDelegate, TArray<FLCLeaderboardRanking> Rankings, int64 Count);
+	DECLARE_DELEGATE_OneParam(FStatisticsDelegate, const TArray<FLCLeaderboardStatistic>& Statistics);
+	DECLARE_DELEGATE_TwoParams(FRankingsDelegate, const TArray<FLCLeaderboardRanking>& Rankings, int64 Count);
 
 	/// The start positon of the query, default is `0`.
 	int64 Skip = 0;

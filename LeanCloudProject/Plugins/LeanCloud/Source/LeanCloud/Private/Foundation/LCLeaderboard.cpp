@@ -58,7 +58,7 @@ void FLCLeaderboard::UpdateStatistics(const TSharedPtr<FLCUser>& User, const TMa
 	FLCHttpRequest Request;
 	Request.HttpMethod = ELCHttpMethod::POST;
 	Request.SetUrl(ApplicationsPtr->AppRouter->GetRouteUrl(
-		FString::Printf(TEXT("leaderboard/users/%s/statistics"), *User->GetObjectId())));
+		FString::Printf(TEXT("leaderboard/users/%s/statistics"), *TargetUser->GetObjectId())));
 	for (auto Value : Values) {
 		TLCMap Temp;
 		Temp.Add("statisticName", Value.Key);

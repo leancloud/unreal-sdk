@@ -6,9 +6,14 @@ FLCLeaderboardStatistic::FLCLeaderboardStatistic(const FLCValue& Content, const 
 	Value = Content["statisticValue"].AsDouble();
 	Entity = Content["entity"].AsString();
 	Object = Content["object"].GetFromLconValue().AsObject();
-	Object->SetApplicationPtr(AppPtr);
-	User = Content["user"].GetFromLconValue().AsObject()->ConvertTo<FLCUser>();
-	User->SetApplicationPtr(AppPtr);
+	if (Object.IsValid()) {
+		Object->SetApplicationPtr(AppPtr);
+	}
+	auto UserObject = Content["user"].GetFromLconValue().AsObject();
+	if (UserObject.IsValid()) {
+		User = UserObject->ConvertTo<FLCUser>();
+		User->SetApplicationPtr(AppPtr);
+	}
 }
 
 FLCLeaderboardRanking::FLCLeaderboardRanking(const FLCValue& Content, const TSharedPtr<FLCApplication>& AppPtr) {
@@ -16,9 +21,14 @@ FLCLeaderboardRanking::FLCLeaderboardRanking(const FLCValue& Content, const TSha
 	EntityId = Content["entity"].AsString();
 	Value = Content["statisticValue"].AsDouble();
 	Object = Content["object"].GetFromLconValue().AsObject();
-	Object->SetApplicationPtr(AppPtr);
-	User = Content["user"].GetFromLconValue().AsObject()->ConvertTo<FLCUser>();
-	User->SetApplicationPtr(AppPtr);
+	if (Object.IsValid()) {
+		Object->SetApplicationPtr(AppPtr);
+	}
+	auto UserObject = Content["user"].GetFromLconValue().AsObject();
+	if (UserObject.IsValid()) {
+		User = UserObject->ConvertTo<FLCUser>();
+		User->SetApplicationPtr(AppPtr);
+	}
 
 	for (auto Item : Content["statistics"].AsArray()) {
 		FLCLeaderboardStatistic Statistic(Item, AppPtr);

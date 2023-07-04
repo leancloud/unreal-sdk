@@ -2,6 +2,7 @@
 #include "LCSMS.h"
 #include "LCUser.h"
 #include "LCValue.h"
+#include "LCLeaderboard.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -16,8 +17,8 @@ bool FWaitRequest::Update() {
 
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageClearObjects, "LeanCloud.Storage.0 Clear Objects",
-								 EAutomationTestFlags::ApplicationContextMask |
-								 EAutomationTestFlags::ProductFilter)
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
 
 bool LeanCloudStorageClearObjects::RunTest(const FString& Parameters) {
 	static bool HasCallBack = false;
@@ -210,12 +211,12 @@ bool LeanCloudStorageQueryTest::RunTest(const FString& Parameters) {
 	return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserSignUpTest, "LeanCloud.Storage.07 User SignUp Test And Update Passwork Test",
-								 EAutomationTestFlags::ApplicationContextMask |
-								 EAutomationTestFlags::ProductFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserSignUpTest,
+                                 "LeanCloud.Storage.07 User SignUp Test And Update Passwork Test",
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
 
 bool LeanCloudStorageUserSignUpTest::RunTest(const FString& Parameters) {
-
 	TSharedPtr<FLCUser> UserPtr = MakeShared<FLCUser>();
 	FString NameAndPassword = FGuid::NewGuid().ToString();
 	FString Email = NameAndPassword + "@qq.com";
@@ -223,27 +224,35 @@ bool LeanCloudStorageUserSignUpTest::RunTest(const FString& Parameters) {
 	UserPtr->SetEmail(Email);
 	UserPtr->SetPassword(NameAndPassword);
 	UserPtr->Set("age", 38);
-	
+
 	static bool HasCallBack = false;
 	UserPtr->SignUp(FLeanCloudBoolResultDelegate::CreateLambda(
 		[=](bool bIsSuccess, const FLCError& Error) {
 			TestTrue("SignUp should be success", bIsSuccess);
 			TestTrue("User's session token has content", !UserPtr->GetSessionToken().IsEmpty());
 			static int RequestCount = 0;
-			FLCUser::Login(NameAndPassword, NameAndPassword, FLeanCloudUserDelegate::CreateLambda([=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
-				TestTrue("Login should be success", ResultUserPtr.IsValid());
-				TestTrue("Username should be same", ResultUserPtr->GetEmail() == Email);
-				TestTrue("age should be same", ResultUserPtr->Get("age").AsInteger() == UserPtr->Get("age").AsInteger());
-				ResultUserPtr->UpdatePassword(NameAndPassword, "123456", FLeanCloudBoolResultDelegate::CreateLambda([=](bool bIsSuccess, const FLCError& Error1) {
-					TestTrue("Update Password be success", bIsSuccess);
-					HasCallBack = true;
-				}));
-			}));
-			FLCUser::LoginByEmail(Email, NameAndPassword, FLeanCloudUserDelegate::CreateLambda([=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
-				TestTrue("Login should be success", ResultUserPtr.IsValid());
-				TestTrue("Username should be same", ResultUserPtr->GetUsername() == NameAndPassword);
-				TestTrue("age should be same", ResultUserPtr->Get("age").AsInteger() == UserPtr->Get("age").AsInteger());
-			}));
+			FLCUser::Login(NameAndPassword, NameAndPassword, FLeanCloudUserDelegate::CreateLambda(
+				               [=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
+					               TestTrue("Login should be success", ResultUserPtr.IsValid());
+					               TestTrue("Username should be same", ResultUserPtr->GetEmail() == Email);
+					               TestTrue("age should be same",
+					                        ResultUserPtr->Get("age").AsInteger() == UserPtr->Get("age").AsInteger());
+					               ResultUserPtr->UpdatePassword(NameAndPassword, "123456",
+					                                             FLeanCloudBoolResultDelegate::CreateLambda(
+						                                             [=](bool bIsSuccess, const FLCError& Error1) {
+							                                             TestTrue("Update Password be success",
+								                                             bIsSuccess);
+						                                             }));
+				               }));
+			FLCUser::LoginByEmail(Email, NameAndPassword, FLeanCloudUserDelegate::CreateLambda(
+				                      [=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
+					                      TestTrue("Login should be success", ResultUserPtr.IsValid());
+					                      TestTrue("Username should be same",
+					                               ResultUserPtr->GetUsername() == NameAndPassword);
+					                      TestTrue("age should be same",
+					                               ResultUserPtr->Get("age").AsInteger() == UserPtr->Get("age").
+					                               AsInteger());
+				                      }));
 		}));
 
 	AddCommand(new FWaitRequest(HasCallBack));
@@ -251,9 +260,10 @@ bool LeanCloudStorageUserSignUpTest::RunTest(const FString& Parameters) {
 }
 
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest, "LeanCloud.Storage.08 User Sign Up Or Login By MobilePhone Test",
-								 EAutomationTestFlags::ApplicationContextMask |
-								 EAutomationTestFlags::ProductFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest,
+                                 "LeanCloud.Storage.08 User Sign Up Or Login By MobilePhone Test",
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
 
 bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& Parameters) {
 	static bool HasCallBack = false;
@@ -276,7 +286,7 @@ bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& 
 									                                    TestTrue(
 										                                    "DisassociateWithPlatform should be success",
 										                                    bIsSuccess1);
-								                                    	HasCallBack = true;
+									                                    HasCallBack = true;
 								                                    }));
 					                                    }));
 		                                    }));
@@ -284,9 +294,10 @@ bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& 
 	return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserLoginAnonymouslyAndLoginWithSessionTokenTest, "LeanCloud.Storage.09 User Login Anonymously Test And Login With Session Token Test",
-								 EAutomationTestFlags::ApplicationContextMask |
-								 EAutomationTestFlags::ProductFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserLoginAnonymouslyAndLoginWithSessionTokenTest,
+                                 "LeanCloud.Storage.09 User Login Anonymously Test And Login With Session Token Test",
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
 
 bool LeanCloudStorageUserLoginAnonymouslyAndLoginWithSessionTokenTest::RunTest(const FString& Parameters) {
 	static bool HasCallBack = false;
@@ -306,7 +317,9 @@ bool LeanCloudStorageUserLoginAnonymouslyAndLoginWithSessionTokenTest::RunTest(c
 						         FLCUser::GetCurrentUser()->IsAnonymous());
 						TestTrue("Current User is valid", FLCUser::GetCurrentUser().IsValid());
 						FLCUser::LogOut();
-						TestTrue("Current User is invalid", !FLCUser::GetCurrentUser().IsValid());
+						TestTrue("Current User is invalid",
+						         !FLCUser::GetCurrentUser().IsValid());
+						HasCallBack = true;
 						HasCallBack = true;
 					}));
 		}));
@@ -316,46 +329,46 @@ bool LeanCloudStorageUserLoginAnonymouslyAndLoginWithSessionTokenTest::RunTest(c
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudStorageUserOtherTest, "LeanCloud.Storage.10 User Other API Test",
-								 EAutomationTestFlags::ApplicationContextMask |
-								 EAutomationTestFlags::ProductFilter)
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
 
 bool LeanCloudStorageUserOtherTest::RunTest(const FString& Parameters) {
 	static bool HasCallBack = false;
-	FLCSMSOption Option;  
+	FLCSMSOption Option;
 	static int RequestCount = 0;
 	RequestCount = 0;
 	HasCallBack = false;
 	FLeanCloudBoolResultDelegate FailDelegate = FLeanCloudBoolResultDelegate::CreateLambda(
-											[=](bool bIsSuccess, const FLCError& Error) {
-												TestTrue("RequestLoginSmsCode should be Fail", !bIsSuccess);
-												RequestCount--;
-												HasCallBack = RequestCount == 0;
-											});
+		[=](bool bIsSuccess, const FLCError& Error) {
+			TestTrue("RequestLoginSmsCode should be Fail", !bIsSuccess);
+			RequestCount--;
+			HasCallBack = RequestCount == 0;
+		});
 	FLCSMS::RequestSMSCode("+8618622223333", Option, FailDelegate);
 	RequestCount++;
-	
+
 	FLCUser::RequestEmailVerify("haha@163.com", FailDelegate);
 	RequestCount++;
-	
+
 	FLCUser::RequestSMSCodeForUpdatingPhoneNumber("+8618622223333", FailDelegate, Option);
 	RequestCount++;
-	
+
 	FLCUser::RequestPasswordResetByEmail("haha@163.com", FailDelegate);
 	RequestCount++;
-	
+
 	FLCUser::RequestPasswordResetBySmsCode("+8618622223333", FailDelegate);
 	RequestCount++;
-	
+
 	FLCUser::ResetPasswordBySmsCode("+143922", "123456", FailDelegate);
 	RequestCount++;
 
 	FLeanCloudBoolResultDelegate SuccessDelegate = FLeanCloudBoolResultDelegate::CreateLambda(
-											[=](bool bIsSuccess, const FLCError& Error) {
-												TestTrue("RequestLoginSmsCode should be Success", bIsSuccess);
-												RequestCount--;
-												HasCallBack = RequestCount == 0;
-											});
-	
+		[=](bool bIsSuccess, const FLCError& Error) {
+			TestTrue("RequestLoginSmsCode should be Success", bIsSuccess);
+			RequestCount--;
+			HasCallBack = RequestCount == 0;
+		});
+
 	FLCUser::VerifySMSCodeForUpdatingPhoneNumber("+8618622223333", "143922", SuccessDelegate);
 	RequestCount++;
 
@@ -368,5 +381,121 @@ bool LeanCloudStorageUserOtherTest::RunTest(const FString& Parameters) {
 	AddCommand(new FWaitRequest(HasCallBack));
 	return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(LeanCloudLeaderboardTest, "LeanCloud.Storage.11 Leaderboard API Test",
+                                 EAutomationTestFlags::ApplicationContextMask |
+                                 EAutomationTestFlags::ProductFilter)
+
+bool LeanCloudLeaderboardTest::RunTest(const FString& Parameters) {
+	static bool HasCallBack = false;
+	HasCallBack = false;
+	TMap<FString, double> Values;
+	FString WorldName = "World";
+	double WorldValue = FMath::RandRange(0, 200);
+	FString ChinaName = "China";
+	double ChinaValue = FMath::RandRange(0, 200);
+
+	Values.Add(WorldName, WorldValue);
+	Values.Add(ChinaName, ChinaValue);
+	FLCUser::LoginAnonymously(FLeanCloudUserDelegate::CreateLambda(
+		[=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
+			if (!ResultUserPtr.IsValid()) {
+				TestTrue("Login should be success", ResultUserPtr.IsValid());
+				HasCallBack = true;
+				return;
+			}
+			FLCLeaderboard::UpdateCurrentUserStatistics(Values, FLCLeaderboard::FStatisticsDelegate::CreateLambda(
+				                                            [=](const TArray<FLCLeaderboardStatistic>&
+				                                            TempStatistics) {
+					                                            static int RequestCount = 0;
+
+					                                            FLCLeaderboard Leaderboard(WorldName);
+					                                            Leaderboard.WithCount = true;
+
+					                                            Leaderboard.GetResults(
+						                                            FLCLeaderboard::FRankingsDelegate::CreateLambda(
+							                                            [=](const TArray<FLCLeaderboardRanking>&
+							                                                Rankings, int64 Count) {
+								                                            TestTrue(
+									                                            "Ranking's count should larger than 0",
+									                                            Count > 0);
+								                                            TestTrue(
+									                                            "Ranking's Num should larger than 0",
+									                                            Rankings.Num() > 0);
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }), FLCError::FDelegate::CreateLambda(
+							                                            [=](const FLCError& Error) {
+								                                            TestTrue("Request Error", false);
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }));
+					                                            RequestCount++;
+
+					                                            Leaderboard.GetAroundResults(
+						                                            FLCUser::GetCurrentUser()->GetObjectId(),
+						                                            FLCLeaderboard::FRankingsDelegate::CreateLambda(
+							                                            [=](const TArray<FLCLeaderboardRanking>&
+							                                                Rankings, int64 Count) {
+								                                            TestTrue(
+									                                            "Ranking's count should larger than 0",
+									                                            Count > 0);
+								                                            TestTrue(
+									                                            "Ranking's Num should larger than 0",
+									                                            Rankings.Num() > 0);
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }), FLCError::FDelegate::CreateLambda(
+							                                            [=](const FLCError& Error) {
+								                                            TestTrue("Request Error", false);
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }));
+					                                            RequestCount++;
+
+					                                            TArray<FString> StatisticNames;
+					                                            StatisticNames.Add(WorldName);
+					                                            StatisticNames.Add(ChinaName);
+					                                            FLCLeaderboard::GetStatistics(
+						                                            FLCUser::GetCurrentUser()->GetObjectId(),
+						                                            FLCLeaderboard::FStatisticsDelegate::CreateLambda(
+							                                            [=](const TArray<FLCLeaderboardStatistic>&
+							                                            Statistics) {
+								                                            for (auto Statistic : Statistics) {
+									                                            if (Statistic.Name == WorldName) {
+										                                            TestTrue(
+											                                            "World should be " +
+											                                            LexToString(WorldValue),
+											                                            Statistic.Value ==
+											                                            WorldValue);
+									                                            }
+									                                            if (Statistic.Name == ChinaName) {
+										                                            TestTrue(
+											                                            "China should be " +
+											                                            LexToString(ChinaValue),
+											                                            Statistic.Value ==
+											                                            ChinaValue);
+									                                            }
+								                                            }
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }), FLCError::FDelegate::CreateLambda(
+							                                            [=](const FLCError& Error) {
+								                                            TestTrue("Request Error", false);
+								                                            RequestCount--;
+								                                            HasCallBack = RequestCount == 0;
+							                                            }), StatisticNames);
+					                                            RequestCount++;
+				                                            }), FLCError::FDelegate::CreateLambda(
+				                                            [=](const FLCError& Error) {
+					                                            TestTrue("Request Error", false);
+					                                            HasCallBack = true;
+				                                            }));
+		}));
+
+	AddCommand(new FWaitRequest(HasCallBack));
+	return true;
+}
+
 
 #endif
