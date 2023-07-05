@@ -1,13 +1,15 @@
 #include "LCApplication.h"
 
 #include "LCUser.h"
+#include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Network/LCHttpClient.h"
 #include "Network/LCAppRouter.h"
 
 #include "Tools/LCDebuger.h"
+#include "Tools/LCJsonHelper.h"
 
-static FString CurrentUserFileName = "CurrentUser";
+static FString CurrentUserFileName = ".userdata";
 
 TMap<FString, TSharedPtr<FLCApplication>> FLCApplication::Registry;
 TSharedPtr<FLCApplication> FLCApplication::DefaultPtr;
@@ -39,14 +41,7 @@ TSharedPtr<FLCApplication> FLCApplication::Register(const FLCApplicationSettings
 	TSharedPtr<FLCApplication> Ptr = MakeShared<FLCApplication>(InSettings);
 	Ptr->HttpClient = MakeShared<FLCHttpClient>(Ptr);
 	Ptr->AppRouter = MakeShared<FLCAppRouter>(Ptr);
-
-	TArray<uint8> Data;
-	if (Ptr->AppRouter->LoadFile(CurrentUserFileName, Data) && Data.Num() > 0) {
-		TSharedPtr<FLCUser> UserPtr = MakeShared<FLCUser>();
-		FMemoryReader Reader(Data);
-		Reader << *UserPtr.Get();
-		Ptr->CurrentUser = UserPtr;
-	}
+	Ptr->LoadCurrentUserFromLocal();
 
 	Registry.Add(InSettings.AppId, Ptr);
 	if (!DefaultPtr.IsValid()) {
@@ -71,6 +66,28 @@ void FLCApplication::Unregister() {
 FLCApplication::FLCApplication() {
 }
 
+void FLCApplication::LoadCurrentUserFromLocal() {
+	TArray<uint8> Data;
+	if (AppRouter->LoadFile(CurrentUserFileName, Data) && Data.Num() > 0) {
+		FString UserStr = FLCHelper::UTF8Encode(Data);
+		TLCMap UserMap = FLCJsonHelper::GetJsonValue(UserStr).AsMap();
+		CurrentUser = FLCObject::CreateObject<FLCUser>(UserMap, AsShared());
+	} else {
+		// 兼容老TDSUser
+		const FString FilePath = FPaths::SandboxesDir() + TEXT("/DataStorage/TDSUser");
+		if (FPaths::FileExists(FilePath))
+		{
+			if (FFileHelper::LoadFileToArray(Data, *FilePath))
+			{
+				const FString UserStr = FLCHelper::UTF8Encode(FLCHelper::AesDecode(Data, FLCHelper::UTF8Encode(FString("tap_save_file_key"))));
+				TLCMap UserMap = FLCJsonHelper::GetJsonValue(UserStr).AsMap();
+				SetCurrentUser(FLCObject::CreateObject<FLCUser>(UserMap, AsShared()));
+				FPlatformFileManager::Get().GetPlatformFile().DeleteFile(*FilePath);
+			}
+		}
+	}
+}
+
 FLCApplication::FLCApplication(const FLCApplicationSettings& InSettings): Settings(InSettings) {
 	
 }
@@ -84,8 +101,7 @@ void FLCApplication::SetCurrentUser(const TSharedPtr<FLCUser>& InUser) {
 	CurrentUser = InUser;
 	TArray<uint8> Data;
 	if (InUser.IsValid()) {
-		FMemoryWriter Writer(Data);
-		Writer << *InUser.Get();
+		Data = FLCHelper::UTF8Encode(InUser->ToString());
 	}
 	AppRouter->SaveFile(CurrentUserFileName, Data);
 }

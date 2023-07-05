@@ -1,6 +1,7 @@
 #include "LCAppRouter.h"
 
 #include "LCError.h"
+#include "Foundation/Tools/LCDebuger.h"
 #include "Misc/FileHelper.h"
 
 
@@ -18,9 +19,13 @@ FString FLCAppRouter::GetFilePath(const FString& FileName) const {
 }
 
 bool FLCAppRouter::SaveFile(const FString& FileName, const TArray<uint8>& Data) {
-	return FFileHelper::SaveArrayToFile(Data, *GetFilePath(FileName));
+	FString Path = GetFilePath(FileName);
+	FLCDebuger::LogVerbose("Save File: " + FileName);
+	return FFileHelper::SaveArrayToFile(Data, *Path);
 }
 
 bool FLCAppRouter::LoadFile(const FString& FileName, TArray<uint8>& Data) {
-	return FFileHelper::LoadFileToArray(Data, *GetFilePath(FileName));
+	FString Path = GetFilePath(FileName);
+	FLCDebuger::LogVerbose("Load File: " + FileName);
+	return FFileHelper::LoadFileToArray(Data, *Path);
 }

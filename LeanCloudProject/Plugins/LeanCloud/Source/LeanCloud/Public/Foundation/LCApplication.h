@@ -16,7 +16,7 @@ class FLCHttpClient;
 class FLCAppRouter;
 
 
-class LEANCLOUD_API FLCApplication {
+class LEANCLOUD_API FLCApplication : public TSharedFromThis<FLCApplication>  {
 public:
 	/**
 	* @brief You can print the output information of LeanCloud to the console or save it to *.log file
@@ -45,11 +45,12 @@ public:
 
 
 private:
-	FLCApplication();
 	
 	FLCApplicationSettings Settings;
 	static TMap<FString, TSharedPtr<FLCApplication>> Registry;
 	TSharedPtr<FLCUser> CurrentUser;
-
+	FLCApplication();
+	void LoadCurrentUserFromLocal();
+	
 };
 
