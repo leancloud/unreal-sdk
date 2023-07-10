@@ -1,5 +1,4 @@
 #include "LCAppRouter.h"
-
 #include "LCError.h"
 #include "Foundation/Tools/LCDebuger.h"
 #include "Misc/FileHelper.h"

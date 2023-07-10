@@ -182,8 +182,17 @@ void FLCUser::LoginWithAuthData(const TLCMap& AuthData, const FString& Platform,
 }
 
 void FLCUser::LoginAnonymously(const FLeanCloudUserDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr) {
+	LoginAnonymously("", CallBack, AppPtr);
+}
+
+void FLCUser::LoginAnonymously(const FString& UUID, const FLeanCloudUserDelegate& CallBack,
+	const TSharedPtr<FLCApplication>& AppPtr) {
 	TLCMap AuthData;
-	AuthData.Add("id", FGuid::NewGuid().ToString());
+	FString AnonymousID = UUID;
+	if (AnonymousID.IsEmpty()) {
+		AnonymousID = FGuid::NewGuid().ToString();
+	}
+	AuthData.Add("id", AnonymousID);
 	LoginWithAuthData(AuthData, KeyAnonymous, CallBack, AppPtr);
 }
 
@@ -319,6 +328,46 @@ bool FLCUser::IsAnonymous() {
 		return true;
 	}
 	return false;
+}
+
+void FLCUser::RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed) {
+	if (GetSessionToken().IsEmpty() || GetObjectId().IsEmpty()) {
+		FLCHelper::PerformOnGameThread([=]() {
+			OnFailed.ExecuteIfBound(FLCError((int)ELCErrorCode::InvalidType, "User is Invalid"));
+		});
+		return;
+	}
+	auto InApplicationPtr = GetApplicationPtr();
+	if (!InApplicationPtr.IsValid()) {
+		FLCHelper::PerformOnGameThread([=]() {
+			OnFailed.ExecuteIfBound(FLCError(ELCErrorCode::NoApplication));
+		});
+		return;
+	}
+	FLCHttpRequest Request;
+	Request.HttpMethod = ELCHttpMethod::GET;
+	FString UrlPath = InApplicationPtr->GetServerUrl() / "storage" / FLCAppRouter::APIVersion /
+		"users/tap-support/identity";
+	Request.SetUrl(UrlPath);
+	InApplicationPtr->HttpClient->Request(Request, FLCHttpResponse::FDelegate::CreateLambda(
+		                                      [=](const FLCHttpResponse& InResponse) {
+			                                      FLCHelper::PerformOnGameThread([=]() {
+				                                      if (InResponse.bIsSuccess()) {
+					                                      FString IdentityToken = InResponse.Data["identityToken"].
+						                                      AsString();
+					                                      if (IdentityToken.IsEmpty()) {
+						                                      OnFailed.ExecuteIfBound(
+							                                      FLCError(ELCErrorCode::MalformedData));
+					                                      }
+					                                      else {
+						                                      OnSuccess.ExecuteIfBound(IdentityToken);
+					                                      }
+				                                      }
+				                                      else {
+					                                      OnFailed.ExecuteIfBound(InResponse.Error);
+				                                      }
+			                                      });
+		                                      }));
 }
 
 TSharedPtr<FLCApplication> FLCUser::GetRealAppPtr(const TSharedPtr<FLCApplication>& AppPtr) {

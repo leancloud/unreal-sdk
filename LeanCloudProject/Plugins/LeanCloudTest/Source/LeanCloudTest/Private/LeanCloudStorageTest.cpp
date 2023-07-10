@@ -272,6 +272,8 @@ bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& 
 	FLCUser::SignUpOrLoginByMobilePhone("+8618622223333", "143922", FLeanCloudUserDelegate::CreateLambda(
 		                                    [=](TSharedPtr<FLCUser> ResultUserPtr, const FLCError& ResultError) {
 			                                    TestTrue("Login should be success", ResultUserPtr.IsValid());
+			                                    static int RequestCount = 0;
+			                                    RequestCount = 0;
 			                                    TLCMap AuthData;
 			                                    AuthData.Add("access_token", FGuid::NewGuid().ToString());
 			                                    AuthData.Add("openid", FGuid::NewGuid().ToString());
@@ -286,9 +288,24 @@ bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& 
 									                                    TestTrue(
 										                                    "DisassociateWithPlatform should be success",
 										                                    bIsSuccess1);
-									                                    HasCallBack = true;
+									                                    RequestCount--;
+									                                    HasCallBack = RequestCount == 0;
 								                                    }));
-					                                    }));
+					                                    })
+			                                    );
+			                                    RequestCount++;
+
+			                                    ResultUserPtr->RetrieveShortToken(
+				                                    FStringSignature::CreateLambda([=](const FString& Signature) {
+				                                    	TestTrue("RetrieveShortToken has Value",!Signature.IsEmpty());
+					                                    RequestCount--;
+					                                    HasCallBack = RequestCount == 0;
+				                                    }), FLCError::FDelegate::CreateLambda([=](const FLCError& Error) {
+				                                    	TestTrue("RetrieveShortToken request fail",true);
+					                                    RequestCount--;
+					                                    HasCallBack = RequestCount == 0;
+				                                    }));
+			                                    RequestCount++;
 		                                    }));
 	AddCommand(new FWaitRequest(HasCallBack));
 	return true;

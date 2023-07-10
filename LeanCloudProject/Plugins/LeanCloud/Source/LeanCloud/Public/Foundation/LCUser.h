@@ -4,7 +4,9 @@
 
 class FLCUser;
 class FLCHttpResponse;
+
 DECLARE_DELEGATE_TwoParams(FLeanCloudUserDelegate, TSharedPtr<FLCUser> UserPtr, const FLCError& Error);
+DECLARE_DELEGATE_OneParam(FStringSignature, const FString& Signature);
 
 class LEANCLOUD_API FLCUser : public FLCObject {
 public:
@@ -38,7 +40,8 @@ public:
 	static void LoginWithSessionToken(const FString& SessionToken, const FLeanCloudUserDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
 	static void LoginWithAuthData(const TLCMap& AuthData, const FString& Platform, const FLeanCloudUserDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
 	static void LoginAnonymously(const FLeanCloudUserDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
-	
+	static void LoginAnonymously(const FString& UUID, const FLeanCloudUserDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
+
 	// 退出登录
 	static void LogOut(const TSharedPtr<FLCApplication>& AppPtr = nullptr);
 
@@ -68,6 +71,10 @@ public:
 
 	// 是否是匿名用户
 	bool IsAnonymous();
+
+	// 客服获取token
+	virtual void RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed);
+
 
 private:
 	
