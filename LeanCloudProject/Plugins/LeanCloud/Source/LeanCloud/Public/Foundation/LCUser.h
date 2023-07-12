@@ -56,7 +56,7 @@ public:
 
 	// 验证SessionToken是否有效
 	static void VerifySessionToken(const FString& SessionToken, const FLeanCloudBoolResultDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
-	bool IsAuthenticated();
+	bool IsAuthenticated() const;
 
 	// 重置密码
 	static void RequestPasswordResetByEmail(const FString& Email, const FLeanCloudBoolResultDelegate& CallBack, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
@@ -70,7 +70,7 @@ public:
 	void DisassociateWithPlatform(const FString& Platform, const FLeanCloudBoolResultDelegate& CallBack);
 
 	// 是否是匿名用户
-	bool IsAnonymous();
+	bool IsAnonymous() const;
 
 	// 客服获取token
 	virtual void RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed);

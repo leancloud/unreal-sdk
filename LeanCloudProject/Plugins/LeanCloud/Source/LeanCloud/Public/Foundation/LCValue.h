@@ -9,6 +9,9 @@ class FLCObject;
 typedef TMap<FString, FLCValue> TLCMap;
 typedef TArray<FLCValue> TLCArray;
 
+LEANCLOUD_API FString LC_MapToString(const TLCMap& InMap);
+LEANCLOUD_API TLCMap LC_StringToMap(const FString& InString);
+
 template<typename T> struct TIsLCValueType           { enum { Value = false }; };
 template<>           struct TIsLCValueType<FString> { enum { Value = true  }; };
 template<>           struct TIsLCValueType<int> { enum { Value = true  }; };

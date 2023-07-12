@@ -1,11 +1,18 @@
 #include "LCUser.h"
-
 #include "Network/LCAppRouter.h"
 #include "Network/LCHttpClient.h"
 #include "Network/LCHttpRequest.h"
 #include "Network/LCHttpResponse.h"
 #include "Tools/LCHelper.h"
+#include "Tools/LCJsonHelper.h"
 
+FString LC_MapToString(const TLCMap& InMap) {
+	return FLCJsonHelper::GetJsonString(InMap);
+}
+
+TLCMap LC_StringToMap(const FString& InString) {
+	return FLCJsonHelper::GetJsonValue(InString).AsMap();
+}
 
 static FString KeyClassUserName = "_User";
 static FString KeyUsername = "username";
@@ -301,7 +308,7 @@ void FLCUser::UpdatePassword(const FString& OldPassword, const FString& NewPassw
 	PutUserWithBoolCallBack("updatePassword", Paras, CallBack);
 }
 
-bool FLCUser::IsAuthenticated() {
+bool FLCUser::IsAuthenticated() const {
 	return !GetSessionToken().IsEmpty();
 }
 
@@ -322,7 +329,7 @@ void FLCUser::DisassociateWithPlatform(const FString& Platform, const FLeanCloud
 	PutUserWithBoolCallBack("", Paras, CallBack);
 }
 
-bool FLCUser::IsAnonymous() {
+bool FLCUser::IsAnonymous() const {
 	auto AuthDataPtr = GetServerData().Find(KeyAuthData);
 	if (AuthDataPtr && AuthDataPtr->AsMap().Find(KeyAnonymous)) {
 		return true;

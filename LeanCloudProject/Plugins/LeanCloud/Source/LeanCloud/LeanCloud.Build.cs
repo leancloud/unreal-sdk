@@ -1,5 +1,6 @@
 // Some copyright should be here...
 
+using System;
 using UnrealBuildTool;
 using System.IO;
 public class LeanCloud : ModuleRules
@@ -9,6 +10,9 @@ public class LeanCloud : ModuleRules
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "Public/Foundation")));
 		PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "Public/RTM")));
+		
+		Console.WriteLine("LeanCloud Module Load");
+
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
