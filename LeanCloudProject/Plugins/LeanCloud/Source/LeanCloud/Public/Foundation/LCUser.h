@@ -73,7 +73,7 @@ public:
 	bool IsAnonymous() const;
 
 	// 客服获取token
-	virtual void RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed);
+	static void RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed, const TSharedPtr<FLCApplication>& AppPtr = nullptr);
 
 
 private:

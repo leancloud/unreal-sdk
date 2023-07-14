@@ -170,7 +170,7 @@ double FLCValue::AsDouble() const {
 }
 
 bool FLCValue::AsBoolean() const {
-	return ValuePtr->AsDouble();
+	return ValuePtr->AsBoolean();
 }
 
 TLCArray& FLCValue::AsArray() const {

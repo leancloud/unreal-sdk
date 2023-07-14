@@ -81,7 +81,7 @@ double FLCValueInteger::AsDouble() {
 }
 
 bool FLCValueInteger::AsBoolean() {
-	return Value;
+	return Value != 0;
 }
 
 bool FLCValueInteger::operator==(const TSharedPtr<FLCValueBase>& Rhs) {
@@ -109,7 +109,7 @@ double FLCValueDouble::AsDouble() {
 }
 
 bool FLCValueDouble::AsBoolean() {
-	return Value;
+	return Value != 0.0;
 }
 
 bool FLCValueDouble::operator==(const TSharedPtr<FLCValueBase>& Rhs)

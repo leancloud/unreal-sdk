@@ -337,14 +337,21 @@ bool FLCUser::IsAnonymous() const {
 	return false;
 }
 
-void FLCUser::RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed) {
-	if (GetSessionToken().IsEmpty() || GetObjectId().IsEmpty()) {
+void FLCUser::RetrieveShortToken(const FStringSignature& OnSuccess, const FLCError::FDelegate& OnFailed, const TSharedPtr<FLCApplication>& AppPtr) {
+	auto CurrentUser = GetCurrentUser(AppPtr);
+	if (!CurrentUser.IsValid()) {
+		FLCHelper::PerformOnGameThread([=]() {
+			OnFailed.ExecuteIfBound(FLCError((int)ELCErrorCode::InvalidType, " Current User is Invalid"));
+		});
+		return;
+	}
+	if (CurrentUser->GetSessionToken().IsEmpty() || CurrentUser->GetObjectId().IsEmpty()) {
 		FLCHelper::PerformOnGameThread([=]() {
 			OnFailed.ExecuteIfBound(FLCError((int)ELCErrorCode::InvalidType, "User is Invalid"));
 		});
 		return;
 	}
-	auto InApplicationPtr = GetApplicationPtr();
+	auto InApplicationPtr = CurrentUser->GetApplicationPtr();
 	if (!InApplicationPtr.IsValid()) {
 		FLCHelper::PerformOnGameThread([=]() {
 			OnFailed.ExecuteIfBound(FLCError(ELCErrorCode::NoApplication));

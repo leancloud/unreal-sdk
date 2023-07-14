@@ -13,13 +13,13 @@ public class LeanCloud : ModuleRules
 		
 		Console.WriteLine("LeanCloud Module Load");
 
-		
+		bEnableExceptions = true;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}
 			);
-				
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
