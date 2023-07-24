@@ -14,6 +14,7 @@ public:
 
 	FLCObject(const FString& InClassName);
 	FLCObject(const FString& InClassName, const FString& InObjectId);
+	FLCObject(const FString& InClassName, const TLCMap& InServerData);
 	virtual ~FLCObject();
 
 	void Set(const FString& Key, const FLCValue& Value);

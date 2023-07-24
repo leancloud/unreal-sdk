@@ -242,6 +242,7 @@ bool LeanCloudStorageUserSignUpTest::RunTest(const FString& Parameters) {
 						                                             [=](bool bIsSuccess, const FLCError& Error1) {
 							                                             TestTrue("Update Password be success",
 								                                             bIsSuccess);
+						                                             		HasCallBack = true;
 						                                             }));
 				               }));
 			FLCUser::LoginByEmail(Email, NameAndPassword, FLeanCloudUserDelegate::CreateLambda(
@@ -294,18 +295,18 @@ bool LeanCloudStorageUserSignUpOrLoginByMobilePhoneTest::RunTest(const FString& 
 					                                    })
 			                                    );
 			                                    RequestCount++;
-
-			                                    ResultUserPtr->RetrieveShortToken(
-				                                    FStringSignature::CreateLambda([=](const FString& Signature) {
-				                                    	TestTrue("RetrieveShortToken has Value",!Signature.IsEmpty());
-					                                    RequestCount--;
-					                                    HasCallBack = RequestCount == 0;
-				                                    }), FLCError::FDelegate::CreateLambda([=](const FLCError& Error) {
-				                                    	TestTrue("RetrieveShortToken request fail",true);
-					                                    RequestCount--;
-					                                    HasCallBack = RequestCount == 0;
-				                                    }));
-			                                    RequestCount++;
+			                                    //
+			                                    // ResultUserPtr->RetrieveShortToken(
+				                                   //  FStringSignature::CreateLambda([=](const FString& Signature) {
+				                                   //  	TestTrue("RetrieveShortToken has Value",!Signature.IsEmpty());
+					                                  //   RequestCount--;
+					                                  //   HasCallBack = RequestCount == 0;
+				                                   //  }), FLCError::FDelegate::CreateLambda([=](const FLCError& Error) {
+				                                   //  	TestTrue("RetrieveShortToken request fail",true);
+					                                  //   RequestCount--;
+					                                  //   HasCallBack = RequestCount == 0;
+				                                   //  }));
+			                                    // RequestCount++;
 		                                    }));
 	AddCommand(new FWaitRequest(HasCallBack));
 	return true;

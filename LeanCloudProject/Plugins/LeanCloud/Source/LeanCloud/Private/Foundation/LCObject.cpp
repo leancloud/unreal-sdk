@@ -40,6 +40,11 @@ FLCObject::FLCObject(const FString& InClassName, const FString& InObjectId) {
 	ServerData.Add(KeyObjectID, InObjectId);
 }
 
+FLCObject::FLCObject(const FString& InClassName, const TLCMap& InServerData) {
+	ServerData = InServerData;
+	ServerData.Add(KeyClassName, InClassName);
+}
+
 FLCObject::~FLCObject() {
 }
 
