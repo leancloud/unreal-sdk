@@ -1,14 +1,16 @@
 #include "LeanCloudModule.h"
-#include "Developer/Settings/Public/ISettingsModule.h"
 #include "LCApplication.h"
 #include "LeanCloudSettings.h"
+#if WITH_EDITOR
+#include "Developer/Settings/Public/ISettingsModule.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "FLeanCloudModule"
 
 void FLeanCloudModule::StartupModule() {
 	// register settings
+#if WITH_EDITOR
 	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
-
 	if (SettingsModule != nullptr) {
 		SettingsModule->RegisterSettings("Project", "Plugins", "LeanCloud",
 		                                 LOCTEXT("LeanCloudSettingsName", "Lean Cloud"),
@@ -16,19 +18,24 @@ void FLeanCloudModule::StartupModule() {
 		                                         "Project settings for LeanCloud plugin"),
 		                                 GetMutableDefault<ULeanCloudSettings>()
 		);
-		for (auto Application : GetDefault<ULeanCloudSettings>()->Applications) {
-			FLCApplication::Register(Application);
-		}
+	}
+#endif
+
+	for (auto Application : GetDefault<ULeanCloudSettings>()->Applications) {
+		FLCApplication::Register(Application);
 	}
 }
 
 void FLeanCloudModule::ShutdownModule() {
 	// unregister settings
+#if WITH_EDITOR
 	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
 
 	if (SettingsModule != nullptr) {
 		SettingsModule->UnregisterSettings("Project", "Plugins", "LeanCloud");
 	}
+#endif
+
 }
 
 #undef LOCTEXT_NAMESPACE

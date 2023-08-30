@@ -19,13 +19,13 @@ public class LeanCloud : ModuleRules
 			new string[] {
 				// ... add public include paths required here ...
 			}
-			);
+		);
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
 			}
-			);
+		);
 			
 		
 		PublicDependencyModuleNames.AddRange(
@@ -34,21 +34,30 @@ public class LeanCloud : ModuleRules
 				"Core", "Json", "JsonUtilities",
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+		);
 			
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"JsonUtilities",
-				"Http", "Settings",
+				"Http",
 				"CoreUObject",
 				// "Engine",
 				// "Slate",
 				// "SlateCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
+		);
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"Settings",
+				}
 			);
+		}
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(
@@ -56,6 +65,6 @@ public class LeanCloud : ModuleRules
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
+		);
 	}
 }
